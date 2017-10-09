@@ -1,4 +1,4 @@
-#Introduction#
+# Introduction #
 
 Solidity smart contracts for Authcoin.
 
