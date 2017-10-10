@@ -34,7 +34,7 @@ contract AuthCoin is Ownable {
     }
 
     // Registers a new EIR.
-    function registerEir(bytes32 eirType, bytes data, bytes32 identity) returns (bool) {
+    function registerEir(bytes32 eirType, bytes data, bytes32 identity) public returns (bool) {
         require(factories[eirType] != address(0));
         EntityIdentityRecordFactory f = factories[eirType];
         EntityIdentityRecord eir = f.create(data);
@@ -47,7 +47,7 @@ contract AuthCoin is Ownable {
 
     // Registers a new factory that can be used to create a new EIR. This method can be called
     // by the owner of the AuthCoinContract.
-    function registerEirFactory(EntityIdentityRecordFactory factory, bytes32 eirType) returns (bool) {
+    function registerEirFactory(EntityIdentityRecordFactory factory, bytes32 eirType) onlyOwner returns (bool) {
         require(factories[eirType] == address(0));
         factories[eirType] = factory;
         factoryList.push(address(factory));
@@ -55,11 +55,16 @@ contract AuthCoin is Ownable {
         return true;
     }
 
-    function getEirFactoryCount() returns (uint count) {
+    // Returns the address of the EIR. This address can be used to access the actual EIR information.
+    function getEir(bytes32 identifier) public returns(address) {
+        return eirs[identifier];
+    }
+
+    function getEirFactoryCount() public returns (uint count) {
         return factoryList.length;
     }
 
-    function getEirCount() returns (uint count) {
+    function getEirCount() public returns (uint count) {
         return eirList.length;
     }
 
