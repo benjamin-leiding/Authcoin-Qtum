@@ -9,6 +9,7 @@ Truffle framework is used to write and test Solidity smart contracts. To set up 
 ```
 npm install -g ethereumjs-testrpc
 npm install -g truffle
+truffle install
 ```
 
 ## Directory Structure ##

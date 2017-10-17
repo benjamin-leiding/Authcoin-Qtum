@@ -2,7 +2,7 @@ pragma solidity ^0.4.15;
 
 
 import "./EntityIdentityRecord.sol";
-import "./Ownable.sol";
+import "zeppelin/ownership/Ownable.sol";
 
 
 // Entity Identity Record (EIR) contract that stores public keys.
