@@ -1,7 +1,7 @@
 pragma solidity ^0.4.15;
 
 
-import "./Ownable.sol";
+import "zeppelin/ownership/Ownable.sol";
 import "./EntityIdentityRecord.sol";
 import "./EntityIdentityRecordFactory.sol";
 import "./PublicKeyEntityIdentityRecordFactory.sol";
