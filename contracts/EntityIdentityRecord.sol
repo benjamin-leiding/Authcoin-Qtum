@@ -4,19 +4,22 @@ pragma solidity ^0.4.15;
 // interface for different type of entity identity records
 contract EntityIdentityRecord {
 
+    function getId() public returns (int);
+
     function getTimestamp() public returns (uint);
 
     function isRevoked() public returns (bool);
 
     function getOwner() public returns (address);
 
-    function getId() public returns (int);
-
     function getType() public returns (bytes32);
 
-    function getData() public returns (bytes);
+    function getContent() public returns (bytes);
 
-    //function getEirId() public returns (int);
+    function getIdentifier(uint index) public returns(bytes32);
+
+    function getIdentifiersCount() public returns(uint);
+
     //function getHash() public returns(bytes32);
     //function getSignature() public returns(bytes32);
 }

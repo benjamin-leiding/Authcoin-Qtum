@@ -7,8 +7,8 @@ import "./DummyEir.sol";
 
 contract DummyEirFactory is EntityIdentityRecordFactory {
 
-    function create(bytes data) returns (EntityIdentityRecord eir) {
-        eir = new DummyEir(data);
+    function create(int id, uint timestamp, bytes content, bool revoked, bytes32[] identifiers, bytes32 hash, bytes signature, address authCoinAddress) returns (EntityIdentityRecord) {
+        return new DummyEir(id, timestamp, content, revoked, identifiers, hash, signature, authCoinAddress);
     }
 
 }
