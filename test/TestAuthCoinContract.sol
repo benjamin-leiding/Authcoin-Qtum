@@ -37,33 +37,34 @@ contract TestAuthCoinContract {
         AuthCoin ac = new AuthCoin();
         ac.registerEirFactory(new DummyEirFactory(), "dummy");
         bytes memory input = new bytes(42);
-        Assert.isTrue(ac.registerEir("dummy", input, "test"), "EIR registration failed");
+        var hash = bytes32(0x0);
+        var signature = new  bytes(128);
+        var identifiers = new bytes32[](0);
+
+        Assert.isTrue(ac.registerEir("dummy", 1, block.timestamp, input, false, identifiers, hash, signature), "EIR registration failed");
         Assert.equal(ac.getEirCount(), 1, "Should be 1");
+
+        address eir = ac.getEir(1);
+        Assert.notEqual(eir, address(0), "Should not be zero address");
     }
 
     function testRegisterUnknownEir() {
         AuthCoin ac = new AuthCoin();
         ErrorProxy proxy = new ErrorProxy(address(ac));
-        AuthCoin(address(proxy)).registerEir("dummy", new bytes(42), "test");
+        bytes memory input = new bytes(42);
+        var identifiers = new bytes32[](0);
+
+        AuthCoin(address(proxy)).registerEir("dummy-2", 1, block.timestamp, input, false, identifiers, bytes32(0x0), new  bytes(128));
         bool r = proxy.execute();
         Assert.isFalse(r, "registration did not fail");
     }
 
-    function testGetEir() {
-        AuthCoin ac = new AuthCoin();
-        ac.registerEirFactory(new DummyEirFactory(), "dummy");
-        bytes memory input = new bytes(42);
-        ac.registerEir("dummy", input, "test");
 
-        address eir = ac.getEir("test");
-        Assert.notEqual(eir, address(0), "Should not be zero address");
-    }
 
     function testGetUnknownEir() {
         AuthCoin ac = new AuthCoin();
-        address eir = ac.getEir(0x0);
+        address eir = ac.getEir(0);
         Assert.equal(eir, address(0), "Should be zero address");
     }
-
 
 }

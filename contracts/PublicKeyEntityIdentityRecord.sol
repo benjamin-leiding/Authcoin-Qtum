@@ -2,13 +2,14 @@ pragma solidity ^0.4.15;
 
 
 import "./EntityIdentityRecord.sol";
-import "zeppelin/ownership/Ownable.sol";
 
 
 // Entity Identity Record (EIR) contract that stores public keys.
-contract PublicKeyEntityIdentityRecord is EntityIdentityRecord, Ownable {
+contract PublicKeyEntityIdentityRecord is EntityIdentityRecord {
 
-    int private eirId;
+    address private owner;
+
+    int private id;
 
     uint private timestamp;
 
@@ -16,21 +17,30 @@ contract PublicKeyEntityIdentityRecord is EntityIdentityRecord, Ownable {
 
     bool private revoked;
 
-    //bytes32 private eirHash;
-    //bytes private signature;
+    bytes32[] private identifiers;
 
-    function PublicKeyEntityIdentityRecord(bytes _publicKey) {
-        timestamp = block.timestamp;
+    bytes32 private hash;
+
+    bytes private signature;
+
+    function PublicKeyEntityIdentityRecord(int _id, uint _timestamp, bytes _content, bool _revoked, bytes32[] _identifiers, bytes32 _hash, bytes _signature, address _authCoinAddress) {
         //TODO validate the key?
-        publicKey = _publicKey;
+        id = _id;
+        timestamp = _timestamp;
+        publicKey = _content;
+        revoked = _revoked;
+        identifiers = _identifiers;
+        hash = _hash;
+        signature = _signature;
+        owner = _authCoinAddress;
+    }
+
+    function getId() public returns (int) {
+        return id;
     }
 
     function getTimestamp() public returns (uint) {
         return timestamp;
-    }
-
-    function isRevoked() public returns (bool) {
-        return revoked;
     }
 
     function getOwner() public returns (address) {
@@ -41,13 +51,20 @@ contract PublicKeyEntityIdentityRecord is EntityIdentityRecord, Ownable {
         return bytes32("pub-key");
     }
 
-    function getData() public returns (bytes) {
+    function getContent() public returns (bytes) {
         return publicKey;
     }
 
-    function getId() public returns (int) {
-        //TODO Maybe we can delete this function?
-        return 1;
+    function isRevoked() public returns (bool) {
+        return revoked;
+    }
+
+    function getIdentifiersCount() public returns(uint) {
+        return identifiers.length;
+    }
+
+    function getIdentifier(uint index) public returns (bytes32) {
+        return identifiers[index];
     }
 
 }
