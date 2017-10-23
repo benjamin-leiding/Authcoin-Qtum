@@ -7,9 +7,7 @@ Solidity smart contracts for Authcoin.
 Truffle framework is used to write and test Solidity smart contracts. To set up the development environment we need to have _Node_ and _npm_ installed. After that we need to install the _TestRPC_ and _Truffle_:
 
 ```
-npm install -g ethereumjs-testrpc
-npm install -g truffle
-truffle install
+npm install
 ```
 
 ## Directory Structure ##
@@ -27,5 +25,18 @@ Execute `truffle compile` command
 
 ## Run Tests ##
 
-1. Run `testrpc`
-2. Run `truffle test`
+```
+npm run test
+```
+
+## Run Code Coverage ##
+
+```
+npm run coverage
+```
+
+## Run Linting ##
+
+```
+npm run lint
+```
