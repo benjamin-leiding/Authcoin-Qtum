@@ -23,7 +23,16 @@ contract PublicKeyEntityIdentityRecord is EntityIdentityRecord {
 
     bytes private signature;
 
-    function PublicKeyEntityIdentityRecord(int _id, uint _timestamp, bytes _content, bool _revoked, bytes32[] _identifiers, bytes32 _hash, bytes _signature, address _authCoinAddress) {
+    function PublicKeyEntityIdentityRecord(
+        int _id,
+        uint _timestamp,
+        bytes _content,
+        bool _revoked,
+        bytes32[] _identifiers,
+        bytes32 _hash,
+        bytes _signature,
+        address _authCoinAddress) {
+
         //TODO validate the key?
         id = _id;
         timestamp = _timestamp;
