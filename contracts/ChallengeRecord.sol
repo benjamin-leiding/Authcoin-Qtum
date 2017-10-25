@@ -34,7 +34,17 @@ contract ChallengeRecord {
 
     address private owner;
 
-    function ChallengeRecord(int _id, int _vaeId, uint _timestamp, bytes32 _type, bytes32 _challenge, EntityIdentityRecord _verifierEir, EntityIdentityRecord _targetEir, bytes32 _hash, bytes _signature, address _authCoinAddress) {
+    function ChallengeRecord(
+        int _id,
+        int _vaeId,
+        uint _timestamp,
+        bytes32 _type,
+        bytes32 _challenge,
+        EntityIdentityRecord _verifierEir,
+        EntityIdentityRecord _targetEir,
+        bytes32 _hash,
+        bytes _signature,
+        address _authCoinAddress) {
         id = _id;
         vaeId = _vaeId;
         timestamp = _timestamp;

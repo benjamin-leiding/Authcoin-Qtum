@@ -90,7 +90,7 @@ contract AuthCoin is Ownable {
         int verifierEir,
         int targetEir,
         bytes32 hash,
-        bytes signature) public returns (bool){
+        bytes signature) public returns (bool) {
         // TODO validate challenge type
         // TODO support of customizable challenges
         EntityIdentityRecord verifier = getEntityIdentityRecord(verifierEir);
@@ -124,8 +124,7 @@ contract AuthCoin is Ownable {
         challenges[cr.getId()] = cr;
         if (isVerifier) {
             require(vae.setChallenge(cr, 0));
-        }
-        else {
+        } else {
             require(vae.setChallenge(cr, 1));
         }
         LogNewChallengeRecord(cr, challengeType, cr.getId(), vae.getVaeId());

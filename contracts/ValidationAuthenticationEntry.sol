@@ -49,7 +49,11 @@ contract ValidationAuthenticationEntry {
     // ChallengeSignatureRecord private targetSignatureRecord;
 
     // Constructor to create a new V&A entry.
-    function ValidationAuthenticationEntry(int _vaeId, EntityIdentityRecord _verifier, EntityIdentityRecord _target, address _authCoinAddress) {
+    function ValidationAuthenticationEntry(
+        int _vaeId,
+        EntityIdentityRecord _verifier,
+        EntityIdentityRecord _target,
+        address _authCoinAddress) {
         require(address(_verifier) != address(0));
         require(address(_target) != address(0));
         require(_authCoinAddress != address(0));
