@@ -100,7 +100,7 @@ contract AuthCoin is Ownable {
     // Registers a new factory that can be used to create new EIRs. This method can be called
     // by the owner of the AuthCoin contract. Because of security reasons the factory contract
     // must be owned by the same address that owens the AuthCoin contract.
-    function registerEirFactory(EntityIdentityRecordFactory factory, bytes32 eirType) onlyOwner returns (bool) {
+    function registerEirFactory(EntityIdentityRecordFactory factory, bytes32 eirType) onlyOwner public returns (bool) {
         require(factories[eirType] == address(0));
         factories[eirType] = factory;
         factoryList.push(address(factory));
