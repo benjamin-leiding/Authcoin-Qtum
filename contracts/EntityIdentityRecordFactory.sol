@@ -9,6 +9,14 @@ import "./EntityIdentityRecord.sol";
 contract EntityIdentityRecordFactory {
 
     // Creates a new instance of EIR.
-    function create(int id, uint timestamp, bytes content, bool revoked, bytes32[] identifiers, bytes32 hash, bytes signature, address authCoinAddress) public returns (EntityIdentityRecord);
+    function create(
+        int id,
+        uint timestamp,
+        bytes content,
+        bool revoked,
+        bytes32[] identifiers,
+        bytes32 hash,
+        bytes signature,
+        address authCoinAddress) returns (EntityIdentityRecord);
 
 }

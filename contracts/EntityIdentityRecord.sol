@@ -16,9 +16,9 @@ contract EntityIdentityRecord {
 
     function getContent() public returns (bytes);
 
-    function getIdentifier(uint index) public returns(bytes32);
+    function getIdentifier(uint index) public returns (bytes32);
 
-    function getIdentifiersCount() public returns(uint);
+    function getIdentifiersCount() public returns (uint);
 
     //function getHash() public returns(bytes32);
     //function getSignature() public returns(bytes32);

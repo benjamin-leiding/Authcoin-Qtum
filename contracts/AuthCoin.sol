@@ -33,13 +33,10 @@ contract AuthCoin is Ownable {
     // stores the addresses of EIR factory
     address[] private factoryList;
 
-    event Log_NewEir(EntityIdentityRecord a, bytes32 eirType, int id);
-
-    event Log_NewChallengeRecord(ChallengeRecord cr, bytes32 challengeType, int id, int vaeId);
-
-    event Log_NewVAE(address a, int id);
-
-    event Log_NewEirFactory(address a, bytes32 eirType);
+    event LogNewEir(EntityIdentityRecord a, bytes32 eirType, int id);
+    event LogNewChallengeRecord(ChallengeRecord cr, bytes32 challengeType, int id, int vaeId);
+    event LogNewVAE(address a, int id);
+    event LogNewEirFactory(address a, bytes32 eirType);
 
     function AuthCoin() {
         // register default factory
@@ -52,21 +49,48 @@ contract AuthCoin is Ownable {
     // TODO What kind of values are inside the identifiers in EIR? (e-mail, username, etc ?)
     // TODO May I assume that EIR identifiers are unique? (probably not?)
     // TODO Change the type of id 'parameter' to bytes32?
-    function registerEir(bytes32 eirType, int id, uint timestamp, bytes content, bool revoked, bytes32[] identifiers, bytes32 hash, bytes signature) public returns (bool) {
+    function registerEir(
+        bytes32 eirType,
+        int id,
+        uint timestamp,
+        bytes content,
+        bool revoked,
+        bytes32[] identifiers,
+        bytes32 hash,
+        bytes signature) public returns (bool)
+    {
         require(factories[eirType] != address(0));
         //TODO check id?
         EntityIdentityRecordFactory f = factories[eirType];
-        EntityIdentityRecord eir = f.create(id, timestamp, content, revoked, identifiers, hash, signature, owner);
+        EntityIdentityRecord eir = f.create(
+            id,
+            timestamp,
+            content,
+            revoked,
+            identifiers,
+            hash,
+            signature,
+            owner
+        );
 
         // TODO May I assume that EIR ID is unique? (probably not?)
         eirs[id] = eir;
         eirList.push(address(eir));
-        Log_NewEir(eir, eirType, id);
+        LogNewEir(eir, eirType, id);
         return true;
     }
 
     // Registers a new challenge record.
-    function registerChallengeRecord(int id, int vaeId, uint timestamp, bytes32 challengeType, bytes32 challenge, int verifierEir, int targetEir, bytes32 hash, bytes signature) public returns (bool){
+    function registerChallengeRecord(
+        int id,
+        int vaeId,
+        uint timestamp,
+        bytes32 challengeType,
+        bytes32 challenge,
+        int verifierEir,
+        int targetEir,
+        bytes32 hash,
+        bytes signature) public returns (bool){
         // TODO validate challenge type
         // TODO support of customizable challenges
         EntityIdentityRecord verifier = getEntityIdentityRecord(verifierEir);
@@ -82,10 +106,21 @@ contract AuthCoin is Ownable {
 
             vaes[vae.getVaeId()] = vae;
             vaesList.push(address(vae));
-            Log_NewVAE(vae, vaeId);
+            LogNewVAE(vae, vaeId);
         }
 
-        ChallengeRecord cr = new ChallengeRecord(id, vaeId, timestamp, challengeType, challenge, verifier, target, hash, signature, owner);
+        ChallengeRecord cr = new ChallengeRecord(
+            id,
+            vaeId,
+            timestamp,
+            challengeType,
+            challenge,
+            verifier,
+            target,
+            hash,
+            signature,
+            owner
+        );
         challenges[cr.getId()] = cr;
         if (isVerifier) {
             require(vae.setChallenge(cr, 0));
@@ -93,7 +128,7 @@ contract AuthCoin is Ownable {
         else {
             require(vae.setChallenge(cr, 1));
         }
-        Log_NewChallengeRecord(cr, challengeType, cr.getId(), vae.getVaeId());
+        LogNewChallengeRecord(cr, challengeType, cr.getId(), vae.getVaeId());
         return true;
     }
 
@@ -104,7 +139,7 @@ contract AuthCoin is Ownable {
         require(factories[eirType] == address(0));
         factories[eirType] = factory;
         factoryList.push(address(factory));
-        Log_NewEirFactory(address(factory), eirType);
+        LogNewEirFactory(address(factory), eirType);
         return true;
     }
 
