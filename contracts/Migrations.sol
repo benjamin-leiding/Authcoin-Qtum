@@ -8,7 +8,8 @@ contract Migrations {
     uint public last_completed_migration;
 
     modifier restricted() {
-        if (msg.sender == owner) _;
+        if (msg.sender == owner)
+        _;
     }
 
     function Migrations() {
@@ -19,8 +20,8 @@ contract Migrations {
         last_completed_migration = completed;
     }
 
-    function upgrade(address new_address) restricted {
-        Migrations upgraded = Migrations(new_address);
+    function upgrade(address newAddress) restricted {
+        Migrations upgraded = Migrations(newAddress);
         upgraded.setCompleted(last_completed_migration);
     }
 }

@@ -22,8 +22,8 @@ contract AuthCoin is Ownable {
     // stores the addresses of EIR factory
     address[] private factoryList;
 
-    event Log_NewEir(EntityIdentityRecord a, bytes32 eirType);
-    event Log_NewEirFactory(address a, bytes32 eirType);
+    event LogNewEir(EntityIdentityRecord a, bytes32 eirType);
+    event LogNewEirFactory(address a, bytes32 eirType);
 
     function AuthCoin() {
         // register default factory
@@ -36,15 +36,33 @@ contract AuthCoin is Ownable {
     // TODO What kind of values are inside the identifiers in EIR? (e-mail, username, etc ?)
     // TODO May I assume that EIR identifiers are unique? (probably not?)
     // TODO Change the type of id 'parameter' to bytes32?
-    function registerEir(bytes32 eirType, int id, uint timestamp, bytes content, bool revoked, bytes32[] identifiers, bytes32 hash, bytes signature) public returns (bool) {
+    function registerEir(
+        bytes32 eirType,
+        int id,
+        uint timestamp,
+        bytes content,
+        bool revoked,
+        bytes32[] identifiers,
+        bytes32 hash,
+        bytes signature) public returns (bool)
+    {
         require(factories[eirType] != address(0));
         EntityIdentityRecordFactory f = factories[eirType];
-        EntityIdentityRecord eir = f.create(id, timestamp, content, revoked, identifiers, hash, signature, owner);
+        EntityIdentityRecord eir = f.create(
+            id,
+            timestamp,
+            content,
+            revoked,
+            identifiers,
+            hash,
+            signature,
+            owner
+        );
 
         // TODO May I assume that EIR ID is unique? (probably not?)
         eirs[id] = eir;
         eirList.push(address(eir));
-        Log_NewEir(eir, eirType);
+        LogNewEir(eir, eirType);
         return true;
     }
 
@@ -55,7 +73,7 @@ contract AuthCoin is Ownable {
         require(factories[eirType] == address(0));
         factories[eirType] = factory;
         factoryList.push(address(factory));
-        Log_NewEirFactory(address(factory), eirType);
+        LogNewEirFactory(address(factory), eirType);
         return true;
     }
 
