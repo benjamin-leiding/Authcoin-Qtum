@@ -8,8 +8,10 @@ contract DummyEir is EntityIdentityRecord {
 
     bytes private dummyData;
 
-    function DummyEir(int id, uint timestamp, bytes content, bool revoked,  bytes32[] identifiers, bytes32 hash, bytes signature, address authCoinAddress) {
+    int private id;
 
+    function DummyEir(int _id, uint timestamp, bytes content, bool revoked, bytes32[] identifiers, bytes32 hash, bytes signature, address authCoinAddress) {
+        id = _id;
     }
 
     function getTimestamp() public returns (uint) {
@@ -33,14 +35,14 @@ contract DummyEir is EntityIdentityRecord {
     }
 
     function getId() public returns (int) {
-        return 1;
+        return id;
     }
 
-    function getIdentifiersCount() public returns(uint) {
+    function getIdentifiersCount() public returns (uint) {
         return 0;
     }
 
-    function getIdentifier(uint index) public returns(bytes32) {
+    function getIdentifier(uint index) public returns (bytes32) {
         return bytes32(0);
     }
 

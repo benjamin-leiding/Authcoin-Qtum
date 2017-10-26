@@ -59,8 +59,6 @@ contract TestAuthCoinContract {
         Assert.isFalse(r, "registration did not fail");
     }
 
-
-
     function testGetUnknownEir() {
         AuthCoin ac = new AuthCoin();
         address eir = ac.getEir(0);

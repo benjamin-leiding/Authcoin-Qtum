@@ -18,4 +18,5 @@ contract EntityIdentityRecordFactory {
         bytes32 hash,
         bytes signature,
         address authCoinAddress) returns (EntityIdentityRecord);
+
 }
