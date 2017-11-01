@@ -3,7 +3,6 @@
 build
 installed_contracts
 node_modules/
-contracts/
 coverage/
 package-lock.json
 coverage.json
