@@ -14,8 +14,8 @@ contract TestValidationAuthenticationEntry {
     EntityIdentityRecord eir2;
 
     function beforeAll() {
-        eir1 = new DummyEir(1, block.timestamp, new bytes(42), false, new bytes32[](0), bytes32(0x0), new  bytes(128), DeployedAddresses.AuthCoin());
-        eir2 = new DummyEir(1, block.timestamp, new bytes(42), false, new bytes32[](0), bytes32(0x0), new  bytes(128), DeployedAddresses.AuthCoin());
+        eir1 = new DummyEir(1, block.timestamp, "dummyContentType", new bytes(42), false, new bytes32[](0), bytes32(0x0), new  bytes(128), DeployedAddresses.AuthCoin());
+        eir2 = new DummyEir(1, block.timestamp, "dummyContentType", new bytes(42), false, new bytes32[](0), bytes32(0x0), new  bytes(128), DeployedAddresses.AuthCoin());
     }
 
     function testCreateNewValidationAuthenticationEntry() {

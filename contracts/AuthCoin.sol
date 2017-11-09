@@ -7,13 +7,16 @@ import "./ChallengeRecord.sol";
 import "./ValidationAuthenticationEntry.sol";
 import "./EntityIdentityRecordFactory.sol";
 import "./PublicKeyEntityIdentityRecordFactory.sol";
-
+import "./signatures/RsaVerify.sol";
+import "./signatures/ECVerify.sol";
+import "./utils/BytesUtils.sol";
 
 // Main entry point for Authcoin protocol.
 contract AuthCoin is Ownable {
 
     // stores EIR values (eir_id => EntityIdentityRecord)
     mapping (int => EntityIdentityRecord) private eirs;
+    mapping (bytes32 => int) private contentHashToEirId;
 
     // stores the addresses of Entity Identity Records
     address[] private eirList;
@@ -53,6 +56,7 @@ contract AuthCoin is Ownable {
         bytes32 eirType,
         int id,
         uint timestamp,
+        bytes32 contentType,
         bytes content,
         bool revoked,
         bytes32[] identifiers,
@@ -65,6 +69,7 @@ contract AuthCoin is Ownable {
         EntityIdentityRecord eir = f.create(
             id,
             timestamp,
+            contentType,
             content,
             revoked,
             identifiers,
@@ -75,10 +80,32 @@ contract AuthCoin is Ownable {
 
         // TODO May I assume that EIR ID is unique? (probably not?)
         eirs[id] = eir;
+        contentHashToEirId[keccak256(content)] = id;
         eirList.push(address(eir));
         LogNewEir(eir, eirType, id);
         return true;
     }
+
+    function revokeEir(bytes publicKey, bytes directKeyRevocationSignature) public returns (bool) {
+        EntityIdentityRecord eir = getEirByContentHash(keccak256(publicKey));
+        require(address(eir) != address(0));
+
+        // TODO: Refactor
+        if(eir.getContentType() == bytes32("rsaPublicKey")) {
+            if(RsaVerify.verifyDirectKeySignature(directKeyRevocationSignature, publicKey)) {
+                eir.setRevoked(true);
+                return true;
+            }
+        } else if(eir.getContentType() == bytes32("ecPublicKeyAddress")) {
+            if(ECVerify.verifyDirectKeySignature(directKeyRevocationSignature, publicKey)) {
+                eir.setRevoked(true);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     // Registers a new challenge record.
     function registerChallengeRecord(
@@ -143,29 +170,33 @@ contract AuthCoin is Ownable {
     }
 
     // Returns the address of the EIR. This address can be used to access the actual EIR information.
-    function getEir(int eirId) public returns (EntityIdentityRecord) {
+    function getEir(int eirId) public view returns (EntityIdentityRecord) {
         return eirs[eirId];
     }
 
-    function getChallengeRecord(int id) public returns (ChallengeRecord) {
+    function getEirByContentHash(bytes32 contentHash) public view returns (EntityIdentityRecord) {
+        return eirs[contentHashToEirId[contentHash]];
+    }
+
+    function getChallengeRecord(int id) public view returns (ChallengeRecord) {
         return challenges[id];
     }
 
-    function getEntityIdentityRecord(int eirId) private returns (EntityIdentityRecord) {
+    function getEntityIdentityRecord(int eirId) private view returns (EntityIdentityRecord) {
         EntityIdentityRecord eir = getEir(eirId);
         require(address(eir) != address(0));
         return eir;
     }
 
-    function getEirFactoryCount() public returns (uint) {
+    function getEirFactoryCount() public view returns (uint) {
         return factoryList.length;
     }
 
-    function getEirCount() public returns (uint) {
+    function getEirCount() public view returns (uint) {
         return eirList.length;
     }
 
-    function getVAECount() public returns (uint) {
+    function getVAECount() public view returns (uint) {
         return vaesList.length;
     }
 }

@@ -9,7 +9,7 @@
     "deploy": "truffle deploy",
     "postinstall": "truffle install",
     "console": "truffle console",
-    "testrpc": "testrpc",
+    "testrpc": "testrpc -l 47123880",
     "testrpc:coverage": "node_modules/.bin/testrpc-sc --port 8555",
     "truffle-test": "truffle test",
     "test": "run-p --aggregate-output --race testrpc truffle-test",
