@@ -43,6 +43,9 @@ contract ValidationAuthenticationEntry {
     // Target's response to Verifier's challenge
     ChallengeResponseRecord private targetResponse;
 
+    // challenge_id => ChallengeResponseRecord
+    mapping(int => ChallengeResponseRecord) responses;
+
     address private owner;
 
     // ChallengeSignatureRecord private verifierSignatureRecord;
@@ -103,6 +106,20 @@ contract ValidationAuthenticationEntry {
             targetChallenge = _cr;
         }
         return true;
+    }
+
+    function setChallengeResponseRecord(ChallengeResponseRecord response) onlyOwner public returns (bool) {
+        require(address(responses[response.getChallengeRecordId()]) == address(0));
+        responses[response.getChallengeRecordId()] = response;
+        return true;
+    }
+
+    function getVerifierChallengeRecord() public returns (ChallengeRecord) {
+        return verifierChallenge;
+    }
+
+    function getTargetChallengeRecord() public returns (ChallengeRecord) {
+        return targetChallenge;
     }
 
     // Returns the challenge record.

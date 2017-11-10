@@ -4,6 +4,7 @@ pragma solidity ^0.4.15;
 import "zeppelin/ownership/Ownable.sol";
 import "./EntityIdentityRecord.sol";
 import "./ChallengeRecord.sol";
+import "./ChallengeResponseRecord.sol";
 import "./ValidationAuthenticationEntry.sol";
 import "./EntityIdentityRecordFactory.sol";
 import "./PublicKeyEntityIdentityRecordFactory.sol";
@@ -35,6 +36,7 @@ contract AuthCoin is Ownable {
 
     event LogNewEir(EntityIdentityRecord a, bytes32 eirType, int id);
     event LogNewChallengeRecord(ChallengeRecord cr, bytes32 challengeType, int id, int vaeId);
+    event LogNewChallengeResponseRecord(ChallengeResponseRecord rr, int id, int vaeId, int crId);
     event LogNewVAE(address a, int id);
     event LogNewEirFactory(address a, bytes32 eirType);
 
@@ -48,14 +50,14 @@ contract AuthCoin is Ownable {
     // Registers a new EIR
     // TODO What kind of values are inside the identifiers in EIR? (e-mail, username, etc ?)
     // TODO May I assume that EIR identifiers are unique? (probably not?)
-    // TODO Change the type of id 'parameter' to bytes32?
+    // TODO Change the type of id 'parameter' to bytes32 or address?
     function registerEir(
         bytes32 eirType,
         int id,
         uint timestamp,
         bytes content,
         bool revoked,
-        bytes32[] identifiers,
+        bytes32[] identifiers, // e-mail address, username, age, etc
         bytes32 hash,
         bytes signature) public returns (bool)
     {
@@ -95,7 +97,7 @@ contract AuthCoin is Ownable {
         // TODO support of customizable challenges
         EntityIdentityRecord verifier = getEntityIdentityRecord(verifierEir);
         EntityIdentityRecord target = getEntityIdentityRecord(targetEir);
-        
+
         ValidationAuthenticationEntry vae = vaes[vaeId];
 
         var isVerifier = address(vae) == address(0);
@@ -103,7 +105,6 @@ contract AuthCoin is Ownable {
         if (isVerifier) {
             // this is the first VAE with given identifier. create an entry for this vaeId
             vae = new ValidationAuthenticationEntry(vaeId, verifier, target, owner);
-
             vaes[vae.getVaeId()] = vae;
             vaesList.push(address(vae));
             LogNewVAE(vae, vaeId);
@@ -131,6 +132,39 @@ contract AuthCoin is Ownable {
         return true;
     }
 
+    // Registers a challenge response record.
+    function registerChallengeResponse(
+        int vaeId,
+        int challengeId,
+        uint timestamp,
+        bytes32 response,
+        bytes32 hash,
+        bytes signature) public returns (bool) {
+
+        // check vae id. vae must exist and should be in correct status.
+        ValidationAuthenticationEntry vae = vaes[vaeId];
+        require(address(vae) != address(0));
+        require(vae.getStatus() == 1);
+
+        // check challenge record id. challengeId must be equal to verifier or target challenge id.
+        ChallengeRecord verifierChallenge = vae.getVerifierChallengeRecord();
+        ChallengeRecord targetChallenge = vae.getTargetChallengeRecord();
+
+        require(verifierChallenge.getId() == challengeId || targetChallenge.getId() == challengeId);
+        ChallengeResponseRecord rr = new ChallengeResponseRecord(
+            vaeId,
+            challengeId,
+            timestamp,
+            response,
+            hash,
+            signature,
+            owner
+        );
+
+        require(vae.setChallengeResponseRecord(rr));
+        return true;
+    }
+
     // Registers a new factory that can be used to create new EIRs. This method can be called
     // by the owner of the AuthCoin contract. Because of security reasons the factory contract
     // must be owned by the same address that owens the AuthCoin contract.
@@ -151,12 +185,6 @@ contract AuthCoin is Ownable {
         return challenges[id];
     }
 
-    function getEntityIdentityRecord(int eirId) private returns (EntityIdentityRecord) {
-        EntityIdentityRecord eir = getEir(eirId);
-        require(address(eir) != address(0));
-        return eir;
-    }
-
     function getEirFactoryCount() public returns (uint) {
         return factoryList.length;
     }
@@ -167,5 +195,11 @@ contract AuthCoin is Ownable {
 
     function getVAECount() public returns (uint) {
         return vaesList.length;
+    }
+
+    function getEntityIdentityRecord(int eirId) private returns (EntityIdentityRecord) {
+        EntityIdentityRecord eir = getEir(eirId);
+        require(address(eir) != address(0));
+        return eir;
     }
 }
