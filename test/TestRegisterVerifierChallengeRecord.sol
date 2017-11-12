@@ -18,13 +18,24 @@ contract TestRegisterVerifierChallengeRecord {
 
     EntityIdentityRecord target;
 
-    function beforeEach() {
+    function beforeEachRegisterEirFactory() {
         ac = new AuthCoin();
         ac.registerEirFactory(new DummyEirFactory(), bytes32("dummy"));
-        ac.registerEir("dummy", 1, block.timestamp, "dummyContentType", new bytes(42), false, new bytes32[](0), bytes32(0x0), new  bytes(128));
-        ac.registerEir("dummy", 2, block.timestamp, "dummyContentType", new bytes(42), false, new bytes32[](0), bytes32(0x0), new  bytes(128));
+    }
 
+    function beforeEachRegisterVerifier() {
+        ac.registerEir("dummy", 1, block.timestamp, "dummyContentType", new bytes(42), false, new bytes32[](0), bytes32(0x0), new  bytes(128));
+    }
+
+    function beforeEachRegisterTarget() {
+        ac.registerEir("dummy", 2, block.timestamp, "dummyContentType", new bytes(42), false, new bytes32[](0), bytes32(0x0), new  bytes(128));
+    }
+
+    function beforeEachGetVerifier() {
         verifier = ac.getEir(1);
+    }
+
+    function beforeEachGetTarget() {
         target = ac.getEir(2);
     }
 
