@@ -10,7 +10,7 @@ import "./helpers/ErrorProxy.sol";
 
 contract TestRegisterEir {
 
-    function testRegisterDummyEir() {
+    function testRegisterDummyEir() public {
         AuthCoin ac = new AuthCoin();
         ac.registerEirFactory(new DummyEirFactory(), "dummy");
         bytes memory input = new bytes(42);
@@ -25,7 +25,7 @@ contract TestRegisterEir {
         Assert.notEqual(eir, address(0), "Should not be zero address");
     }
 
-    function testRegisterUnknownEir() {
+    function testRegisterUnknownEir() public {
         AuthCoin ac = new AuthCoin();
         ErrorProxy proxy = new ErrorProxy(address(ac));
         bytes memory input = new bytes(42);
@@ -36,7 +36,7 @@ contract TestRegisterEir {
         Assert.isFalse(r, "registration did not fail");
     }
 
-    function testGetUnknownEir() {
+    function testGetUnknownEir() public {
         AuthCoin ac = new AuthCoin();
         address eir = ac.getEir(0);
         Assert.equal(eir, address(0), "Should be zero address");

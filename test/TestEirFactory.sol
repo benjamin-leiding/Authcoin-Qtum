@@ -10,14 +10,14 @@ import "./helpers/ErrorProxy.sol";
 
 contract TestEirFactory {
 
-    function testRegisterNewEirFactory() {
+    function testRegisterNewEirFactory() public {
         AuthCoin ac = new AuthCoin();
         var success = ac.registerEirFactory(new DummyEirFactory(), "dummy");
         Assert.isTrue(success, "dummy EIR factory registration failed");
         Assert.equal(ac.getEirFactoryCount(), 2, "invalid number of factories created");
     }
 
-    function testRegisterMultipleFactoriesWithSameType() {
+    function testRegisterMultipleFactoriesWithSameType() public {
         AuthCoin ac = new AuthCoin();
         ac.registerEirFactory(new DummyEirFactory(), "dummy");
 

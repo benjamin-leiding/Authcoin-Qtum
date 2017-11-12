@@ -84,7 +84,12 @@ contract PublicKeyEntityIdentityRecord is EntityIdentityRecord {
         return identifiers[index];
     }
 
-    function setRevoked(bool isRevoked) public {
+    function setRevoked(bool isRevoked) onlyOwner public {
         revoked = isRevoked;
+    }
+
+    modifier onlyOwner() {
+        if (msg.sender == owner)
+        _;
     }
 }

@@ -1,6 +1,5 @@
 pragma solidity ^0.4.17;
 
-
 // interface for different type of entity identity records
 contract EntityIdentityRecord {
 
@@ -22,7 +21,7 @@ contract EntityIdentityRecord {
 
     function getIdentifiersCount() public returns (uint);
 
-    function setRevoked(bool isRevoked) public;
+    function setRevoked(bool revoked) public;
 
     //function getHash() public returns(bytes32);
     //function getSignature() public returns(bytes32);

@@ -57,19 +57,19 @@ contract ChallengeRecord {
         owner = _authCoinAddress;
     }
 
-    function getId() public returns(int) {
+    function getId() public view returns(int) {
         return id;
     }
 
-    function getVaeId() public returns (int) {
+    function getVaeId() public view returns (int) {
         return vaeId;
     }
 
-    function getVerifier() public returns (EntityIdentityRecord) {
+    function getVerifier() public view returns (EntityIdentityRecord) {
         return verifierEir;
     }
 
-    function getTarget() public returns (EntityIdentityRecord) {
+    function getTarget() public view returns (EntityIdentityRecord) {
         return targetEir;
     }
 

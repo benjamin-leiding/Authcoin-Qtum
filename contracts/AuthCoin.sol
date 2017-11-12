@@ -37,6 +37,7 @@ contract AuthCoin is Ownable {
     address[] private factoryList;
 
     event LogNewEir(EntityIdentityRecord a, bytes32 eirType, int id);
+    event LogRevokedEir(int id);
     event LogNewChallengeRecord(ChallengeRecord cr, bytes32 challengeType, int id, int vaeId);
     event LogNewVAE(address a, int id);
     event LogNewEirFactory(address a, bytes32 eirType);
@@ -94,11 +95,13 @@ contract AuthCoin is Ownable {
         if(eir.getContentType() == bytes32("rsaPublicKey")) {
             if(RsaVerify.verifyDirectKeySignature(directKeyRevocationSignature, publicKey)) {
                 eir.setRevoked(true);
+                LogRevokedEir(eir.getId());
                 return true;
             }
         } else if(eir.getContentType() == bytes32("ecPublicKeyAddress")) {
             if(ECVerify.verifyDirectKeySignature(directKeyRevocationSignature, publicKey)) {
                 eir.setRevoked(true);
+                LogRevokedEir(eir.getId());
                 return true;
             }
         }

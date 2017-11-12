@@ -13,12 +13,12 @@ contract TestValidationAuthenticationEntry {
     EntityIdentityRecord eir1;
     EntityIdentityRecord eir2;
 
-    function beforeAll() {
+    function beforeAll() public {
         eir1 = new DummyEir(1, block.timestamp, "dummyContentType", new bytes(42), false, new bytes32[](0), bytes32(0x0), new  bytes(128), DeployedAddresses.AuthCoin());
         eir2 = new DummyEir(1, block.timestamp, "dummyContentType", new bytes(42), false, new bytes32[](0), bytes32(0x0), new  bytes(128), DeployedAddresses.AuthCoin());
     }
 
-    function testCreateNewValidationAuthenticationEntry() {
+    function testCreateNewValidationAuthenticationEntry() public {
         ValidationAuthenticationEntry vae = new ValidationAuthenticationEntry(2, eir1, eir2, DeployedAddresses.AuthCoin());
         Assert.equal(vae.getVaeId(), 2, "VAE id should be 2");
         Assert.equal(vae.getVerifier(), address(eir1), "Invalid 'verifier' contract");

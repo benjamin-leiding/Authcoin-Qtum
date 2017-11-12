@@ -8,7 +8,7 @@ import "truffle/DeployedAddresses.sol";
 
 contract TestPublicKeyEntityIdentityRecord {
 
-    function testCreateNewPublicKeyEntityIdentityRecord() {
+    function testCreateNewPublicKeyEntityIdentityRecord() public {
         var data = new bytes(42);
         var hash = bytes32(0x0);
         var signature = new  bytes(128);

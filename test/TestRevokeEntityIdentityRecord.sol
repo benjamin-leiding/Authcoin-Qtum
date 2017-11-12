@@ -13,7 +13,7 @@ import "./helpers/ErrorProxy.sol";
 
 contract TestRevokeEntityIdentityRecord {
 
-    function testRevokeEntityIdentityRecordByRSAPublicKey() {
+    function testRevokeEntityIdentityRecordByRSAPublicKey() public {
         AuthCoin ac = new AuthCoin();
         ac.registerEirFactory(new DummyEirFactory(), bytes32("dummy"));
         bytes memory publicKey = hex"9ffabf3dd8add28b8b08ee6f868ec0628081f6acf8a340da4e5b4624959f1e61fb5cdccf25e25c582eca14c200e57443933819a81b7b1d35165c9d869fec9135";
@@ -26,7 +26,7 @@ contract TestRevokeEntityIdentityRecord {
         Assert.isTrue(revokedEir.isRevoked(), "EIR should be revoked");
     }
 
-    function testRevokeEntityIdentityRecordByECPublicKey() {
+    function testRevokeEntityIdentityRecordByECPublicKey() public {
         AuthCoin ac = new AuthCoin();
         ac.registerEirFactory(new DummyEirFactory(), bytes32("dummy"));
         bytes memory publicKey = hex'fdaa33846e677adac0a66ba60029319698e58623';

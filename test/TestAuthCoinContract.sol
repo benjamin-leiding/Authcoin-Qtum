@@ -10,7 +10,7 @@ import "./helpers/ErrorProxy.sol";
 
 contract TestAuthCoinContract {
 
-    function testCrateAuthCoinContract() {
+    function testCrateAuthCoinContract() public {
         AuthCoin ac = AuthCoin(DeployedAddresses.AuthCoin());
         Assert.equal(ac.getEirFactoryCount(), 1, "");
         Assert.equal(ac.getEirCount(), 0, "Should be 0");

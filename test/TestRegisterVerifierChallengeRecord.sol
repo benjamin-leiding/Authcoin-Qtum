@@ -18,34 +18,34 @@ contract TestRegisterVerifierChallengeRecord {
 
     EntityIdentityRecord target;
 
-    function beforeEachRegisterEirFactory() {
+    function beforeEachRegisterEirFactory() public {
         ac = new AuthCoin();
         ac.registerEirFactory(new DummyEirFactory(), bytes32("dummy"));
     }
 
-    function beforeEachRegisterVerifier() {
+    function beforeEachRegisterVerifier() public {
         ac.registerEir("dummy", 1, block.timestamp, "dummyContentType", new bytes(42), false, new bytes32[](0), bytes32(0x0), new  bytes(128));
     }
 
-    function beforeEachRegisterTarget() {
+    function beforeEachRegisterTarget() public {
         ac.registerEir("dummy", 2, block.timestamp, "dummyContentType", new bytes(42), false, new bytes32[](0), bytes32(0x0), new  bytes(128));
     }
 
-    function beforeEachGetVerifier() {
+    function beforeEachGetVerifier() public {
         verifier = ac.getEir(1);
     }
 
-    function beforeEachGetTarget() {
+    function beforeEachGetTarget() public {
         target = ac.getEir(2);
     }
 
-    function testRegisterVerifierChallengeRecord() {
+    function testRegisterVerifierChallengeRecord() public {
         var result = ac.registerChallengeRecord(1, 1, block.timestamp, bytes32("sign"), bytes32("description"), verifier.getId(), target.getId(), bytes32(0x0), new bytes(128));
         Assert.isTrue(result, "CR registration failed");
         Assert.equal(ac.getVAECount(), 1, "Should be first VAE");
     }
 
-    function testRegisterVerifierAndTargetChallengeRecords() {
+    function testRegisterVerifierAndTargetChallengeRecords() public {
         var verifierResult = ac.registerChallengeRecord(1, 1, block.timestamp, bytes32("sign"), bytes32("description"), verifier.getId(), target.getId(), bytes32(0x0), new bytes(128));
         var targetResult = ac.registerChallengeRecord(2, 1, block.timestamp, bytes32("sign"), bytes32("description"), target.getId(), verifier.getId(), bytes32(0x0), new bytes(128));
         Assert.isTrue(verifierResult, "verifier CR registration failed");

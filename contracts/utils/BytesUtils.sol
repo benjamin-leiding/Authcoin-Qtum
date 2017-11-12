@@ -50,7 +50,7 @@ library BytesUtils {
         else return byte(uint8(b) + 0x57);
     }
 
-    function bytesToString(bytes src) pure internal returns (string out) {
+    function bytesToString(bytes src) pure internal returns (string) {
         uint l = src.length;
         bytes memory s = new bytes(l*2);
 
@@ -62,7 +62,7 @@ library BytesUtils {
             s[i*2+1] = char(lo);
         }
 
-        out = string(s);
+        return string(s);
     }
 
 	function bytesToAddress(bytes _address) pure internal returns (address) {

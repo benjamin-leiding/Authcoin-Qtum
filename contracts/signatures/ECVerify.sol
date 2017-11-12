@@ -6,19 +6,21 @@ library ECVerify {
 
     using BytesUtils for *;
 
-    /*
-    * @dev Parses r, s, v components of the signature.
-    *      The signature format is a compact form of {bytes32 r}{bytes32 s}{uint8 v}
-    *
-    * @param sig signature
-    */
-    function parsersv(bytes sig) internal pure returns(bool, bytes32, bytes32, uint8) {
+    /**
+     * @dev Verifies input hash aginst signature.
+     *
+     * @param msgHash keccak256 hash of message contained in signature
+     * @param sig signature to recover
+     * @param signer public key address
+     * @return True if the input hash is equal to the recovered signature data.
+     */
+    function verifySignature(bytes32 msgHash, bytes sig, address signer) internal pure returns (bool) {
         bytes32 r;
         bytes32 s;
         uint8 v;
 
         if (sig.length != 65)
-            return (false, r, s, v);
+            return false;
 
         assembly {
             r := mload(add(sig, 32))
@@ -30,30 +32,9 @@ library ECVerify {
             v += 27;
 
         if (v != 27 && v != 28)
-            return (false, r, s, v);
-
-        return (true, r, s, v);
-    }
-
-    /**
-     * @dev Verifies input hash aginst signature.
-     *
-     * @param msgHash keccak256 hash of message contained in signature
-     * @param sig signature to recover
-     * @param signer public key address
-     * @return True if the input hash is equal to the recovered signature data.
-     */
-    function verifySignature(bytes32 msgHash, bytes sig, address signer) internal pure returns (bool) {
-        bool valid;
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-        (valid, r, s, v) = parsersv(sig);
-        if(valid == false) {
             return false;
-        }
-        address result = ecrecover(msgHash, v, r, s);
-        return signer == result;
+
+        return signer ==  ecrecover(msgHash, v, r, s);
     }
 
     /**
