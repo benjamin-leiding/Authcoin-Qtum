@@ -92,7 +92,8 @@ contract AuthCoin is Ownable {
         int verifierEir,
         int targetEir,
         bytes32 hash,
-        bytes signature) public returns (bool) {
+        bytes signature) public returns (bool)
+    {
         // TODO validate challenge type
         // TODO support of customizable challenges
         EntityIdentityRecord verifier = getEntityIdentityRecord(verifierEir);
@@ -100,7 +101,7 @@ contract AuthCoin is Ownable {
 
         ValidationAuthenticationEntry vae = vaes[vaeId];
 
-        var isVerifier = address(vae) == address(0);
+        var isVerifier = (address(vae) == address(0));
 
         if (isVerifier) {
             // this is the first VAE with given identifier. create an entry for this vaeId
@@ -128,7 +129,12 @@ contract AuthCoin is Ownable {
         } else {
             require(vae.setChallenge(cr, 1));
         }
-        LogNewChallengeRecord(cr, challengeType, cr.getId(), vae.getVaeId());
+        LogNewChallengeRecord(
+            cr,
+            challengeType,
+            cr.getId(),
+            vae.getVaeId()
+        );
         return true;
     }
 
@@ -139,7 +145,8 @@ contract AuthCoin is Ownable {
         uint timestamp,
         bytes32 response,
         bytes32 hash,
-        bytes signature) public returns (bool) {
+        bytes signature) public returns (bool)
+    {
 
         // check vae id. vae must exist and should be in correct status.
         ValidationAuthenticationEntry vae = vaes[vaeId];
@@ -162,6 +169,26 @@ contract AuthCoin is Ownable {
         );
 
         require(vae.setChallengeResponseRecord(rr));
+        return true;
+    }
+
+    // Registers a challenge response signature record.
+    function registerSignatureRecord(
+        int _id,
+        int _vaeId,
+        int _responseRecordId,
+        uint _timestamp,
+        uint _expirationDate,
+        bool _successful,
+        bytes32[] _hash,
+        bytes _signature) public returns (bool)
+    {
+
+        // check vae id. vae must exist and should be in correct status.
+        ValidationAuthenticationEntry vae = vaes[_vaeId];
+        require(address(vae) != address(0));
+        require(vae.getStatus() == 1);
+
         return true;
     }
 
@@ -202,4 +229,5 @@ contract AuthCoin is Ownable {
         require(address(eir) != address(0));
         return eir;
     }
+
 }

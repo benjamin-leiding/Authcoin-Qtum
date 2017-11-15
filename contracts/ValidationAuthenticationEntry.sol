@@ -146,10 +146,11 @@ contract ValidationAuthenticationEntry {
         if (verifierResponse == address(0) || targetResponse == address(0)) {
             return 1;
         }
-        //if (verifierSignatureRecord == address(0) || targetSignatureRecord == address(0)) {
-        //    return 2;
-        //}
-
+        /*
+        if (verifierSignatureRecord == address(0) || targetSignatureRecord == address(0)) {
+            return 2;
+        }
+    */
         return 3;
     }
 

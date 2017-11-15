@@ -1,5 +1,6 @@
 pragma solidity ^0.4.15;
 
+
 // Contains information about the challenge response.
 contract ChallengeResponseRecord {
 
