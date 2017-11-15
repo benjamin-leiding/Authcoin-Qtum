@@ -41,7 +41,7 @@ The following _qtum-cli_ command can be used to register new EIR:
 TODO
 ```
 
-[AuthCoin.getEir](contracts/AuthCoin.sol#L112) function can be used to query EIR by the id.
+[AuthCoin.getEir](contracts/AuthCoin.sol#L207) function can be used to query EIR by the id.
 
 ```
 TODO
@@ -57,7 +57,7 @@ Because Authcoin uses bidirectional validation and authentication process, both 
 for each other. The challenge record contract format and further information are stored in a 
 [ChallengeRecord (CR)](contracts/ChallengeRecord.sol). 
 
-CRs can be registered by calling the [AuthCoin.registerChallengeRequest](contracts/AuthCoin.sol#86) function and it has 
+CRs can be registered by calling the [AuthCoin.registerChallengeRecord](contracts/AuthCoin.sol#86) function and it has 
 the following parameters:
 
 | Name           | Type           | Description  |
@@ -82,7 +82,7 @@ TODO
 A challenge response record (RR) is creates as part of the validation and authentication process. The verifier and the 
 target create responses to the corresponding challenge requests. A RR contains the response itself and related information. 
 
-RR can be registered by calling the [AuthCoin.registerChallengeResponse](contracts/AuthCoin.sol#L136) function. It has the following 
+RR can be registered by calling the [AuthCoin.registerChallengeResponse](contracts/AuthCoin.sol#L142) function. It has the following 
 input parameters:
  
 | Name           | Type           | Description  |
