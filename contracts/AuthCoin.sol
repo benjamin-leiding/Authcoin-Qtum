@@ -262,10 +262,4 @@ contract AuthCoin is Ownable {
         return vaesList.length;
     }
 
-    function getEntityIdentityRecord(int eirId) private returns (EntityIdentityRecord) {
-        EntityIdentityRecord eir = getEir(eirId);
-        require(address(eir) != address(0));
-        return eir;
-    }
-
 }
