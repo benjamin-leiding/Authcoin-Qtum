@@ -4,9 +4,7 @@ var RsaVerify = artifacts.require("./signatures/RsaVerify.sol");
 var ECVerify = artifacts.require("./signatures/ECVerify.sol");
 
 module.exports = function(deployer) {
-  deployer.deploy([BytesUtils, RsaVerify, ECVerify]);
-  deployer.link(RsaVerify, AuthCoinContract);
-  deployer.link(ECVerify, AuthCoinContract);
+  deployer.deploy([BytesUtils]);
   deployer.link(BytesUtils, AuthCoinContract);
   deployer.deploy([AuthCoinContract]);
 };
