@@ -57,7 +57,6 @@ contract AuthCoin is Ownable {
         bytes32 eirType,
         int id,
         uint timestamp,
-        bytes32 contentType,
         bytes content,
         bool revoked,
         bytes32[] identifiers,
@@ -70,7 +69,6 @@ contract AuthCoin is Ownable {
         EntityIdentityRecord eir = f.create(
             id,
             timestamp,
-            contentType,
             content,
             revoked,
             identifiers,
@@ -87,20 +85,20 @@ contract AuthCoin is Ownable {
         return true;
     }
 
-    function revokeEir(bytes publicKey, bytes directKeyRevocationSignature) public returns (bool) {
+    function revokeEir(bytes publicKey, bytes directKeyRevocationSignature, bytes32 tempType) public returns (bool) {
         EntityIdentityRecord eir = getEirByContentHash(keccak256(publicKey));
         require(address(eir) != address(0));
 
         // TODO: Refactor
-        if(eir.getContentType() == bytes32("rsaPublicKey")) {
+        if(bytes32("rsaPublicKey") == tempType) {
             if(RsaVerify.verifyDirectKeySignature(directKeyRevocationSignature, publicKey)) {
-                eir.setRevoked(true);
+                eir.revoke();
                 LogRevokedEir(eir.getId());
                 return true;
             }
-        } else if(eir.getContentType() == bytes32("ecPublicKeyAddress")) {
+        } else if(bytes32("ecPublicKeyAddress") == tempType) {
             if(ECVerify.verifyDirectKeySignature(directKeyRevocationSignature, publicKey)) {
-                eir.setRevoked(true);
+                eir.revoke();
                 LogRevokedEir(eir.getId());
                 return true;
             }

@@ -7,13 +7,13 @@ import "../../contracts/EntityIdentityRecord.sol";
 contract DummyEir is EntityIdentityRecord {
 
     bytes private dummyData;
-    bytes32 private contentType;
+
     int private id;
+
     bool private revoked;
 
-    function DummyEir(int _id, uint timestamp, bytes32 _contentType, bytes content, bool revoked, bytes32[] identifiers, bytes32 hash, bytes signature, address authCoinAddress) {
+    function DummyEir(int _id, uint timestamp, bytes content, bool revoked, bytes32[] identifiers, bytes32 hash, bytes signature, address authCoinAddress) {
         id = _id;
-        contentType = _contentType;
     }
 
     function getTimestamp() public returns (uint) {
@@ -32,10 +32,6 @@ contract DummyEir is EntityIdentityRecord {
         return bytes32("dummy");
     }
 
-    function getContentType() public returns (bytes32) {
-        return contentType;
-    }
-
     function getContent() public returns (bytes) {
         return new bytes(32);
     }
@@ -52,7 +48,7 @@ contract DummyEir is EntityIdentityRecord {
         return bytes32(0);
     }
 
-    function setRevoked(bool isRevoked) public {
-        revoked = isRevoked;
+    function revoke() public {
+        revoked = true;
     }
 }

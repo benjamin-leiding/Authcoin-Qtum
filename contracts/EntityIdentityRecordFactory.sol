@@ -12,7 +12,6 @@ contract EntityIdentityRecordFactory {
     function create(
         int id,
         uint timestamp,
-        bytes32 contentType,
         bytes content,
         bool revoked,
         bytes32[] identifiers,

@@ -11,14 +11,13 @@ contract PublicKeyEntityIdentityRecordFactory is EntityIdentityRecordFactory {
     function create(
         int id,
         uint timestamp,
-        bytes32 contentType,
         bytes content,
         bool revoked,
         bytes32[] identifiers,
         bytes32 hash, bytes signature,
         address authCoinAddress) returns (EntityIdentityRecord)
     {
-        return new PublicKeyEntityIdentityRecord(id, timestamp, contentType, content, revoked, identifiers, hash, signature, authCoinAddress);
+        return new PublicKeyEntityIdentityRecord(id, timestamp, content, revoked, identifiers, hash, signature, authCoinAddress);
     }
 
 }

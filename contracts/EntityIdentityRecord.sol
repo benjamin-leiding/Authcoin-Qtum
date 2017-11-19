@@ -13,16 +13,14 @@ contract EntityIdentityRecord {
 
     function getType() public returns (bytes32);
 
-    function getContentType() public returns (bytes32);
-
     function getContent() public returns (bytes);
 
     function getIdentifier(uint index) public returns (bytes32);
 
     function getIdentifiersCount() public returns (uint);
 
-    function setRevoked(bool revoked) public;
-
+    // TODO: onlyOwner
+    function revoke() public;
     //function getHash() public returns(bytes32);
     //function getSignature() public returns(bytes32);
 }

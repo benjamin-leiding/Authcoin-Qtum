@@ -13,8 +13,6 @@ contract PublicKeyEntityIdentityRecord is EntityIdentityRecord {
 
     uint private timestamp;
 
-    bytes32 keyType;
-
     bytes private publicKey;
 
     bool private revoked;
@@ -28,7 +26,6 @@ contract PublicKeyEntityIdentityRecord is EntityIdentityRecord {
     function PublicKeyEntityIdentityRecord(
         int _id,
         uint _timestamp,
-        bytes32 _keyType,
         bytes _content,
         bool _revoked,
         bytes32[] _identifiers,
@@ -39,7 +36,6 @@ contract PublicKeyEntityIdentityRecord is EntityIdentityRecord {
         //TODO validate the key?
         id = _id;
         timestamp = _timestamp;
-        keyType = _keyType;
         publicKey = _content;
         revoked = _revoked;
         identifiers = _identifiers;
@@ -64,10 +60,6 @@ contract PublicKeyEntityIdentityRecord is EntityIdentityRecord {
         return bytes32("pub-key");
     }
 
-    function getContentType() public returns (bytes32) {
-        return keyType;
-    }
-
     function getContent() public returns (bytes) {
         return publicKey;
     }
@@ -84,12 +76,7 @@ contract PublicKeyEntityIdentityRecord is EntityIdentityRecord {
         return identifiers[index];
     }
 
-    function setRevoked(bool isRevoked) onlyOwner public {
-        revoked = isRevoked;
-    }
-
-    modifier onlyOwner() {
-        if (msg.sender == owner)
-        _;
+    function revoke() public {
+        revoked = true;
     }
 }
