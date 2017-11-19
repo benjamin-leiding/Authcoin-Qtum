@@ -76,4 +76,7 @@ contract PublicKeyEntityIdentityRecord is EntityIdentityRecord {
         return identifiers[index];
     }
 
+    function revoke() public {
+        revoked = true;
+    }
 }

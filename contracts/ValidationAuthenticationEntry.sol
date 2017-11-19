@@ -69,23 +69,23 @@ contract ValidationAuthenticationEntry {
         owner = _authCoinAddress;
     }
 
-    function getVaeId() public returns(int) {
+    function getVaeId() public view returns(int) {
         return vaeId;
     }
 
-    function getTimestamp() public returns(uint) {
+    function getTimestamp() public view returns(uint) {
         return createdAt;
     }
 
-    function getVerifier() public returns(address) {
+    function getVerifier() public view returns(address) {
         return address(verifier);
     }
 
-    function getTarget() public returns(address) {
+    function getTarget() public view returns(address) {
         return address(target);
     }
 
-    function getOwner() public returns(address) {
+    function getOwner() public view returns(address) {
         return owner;
     }
 
@@ -125,7 +125,7 @@ contract ValidationAuthenticationEntry {
     // Returns the challenge record.
     // 0 = verifier
     // 1 = target
-    function getChallengeRecord(int _type) private returns (ChallengeRecord) {
+    function getChallengeRecord(int _type) private view returns (ChallengeRecord) {
         if (_type == 0) {
             return verifierChallenge;
         }
@@ -139,7 +139,7 @@ contract ValidationAuthenticationEntry {
     //    3 - failed
     //    4 - revoked
     //    5 - successful
-    function getStatus() public returns (uint) {
+    function getStatus() public view returns (uint) {
         if (targetChallenge == address(0) || verifierChallenge == address(0)) {
             return 0;
         }

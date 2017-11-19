@@ -10,6 +10,8 @@ contract DummyEir is EntityIdentityRecord {
 
     int private id;
 
+    bool private revoked;
+
     function DummyEir(int _id, uint timestamp, bytes content, bool revoked, bytes32[] identifiers, bytes32 hash, bytes signature, address authCoinAddress) {
         id = _id;
     }
@@ -19,7 +21,7 @@ contract DummyEir is EntityIdentityRecord {
     }
 
     function isRevoked() public returns (bool) {
-        return false;
+        return revoked;
     }
 
     function getOwner() public returns (address) {
@@ -46,4 +48,7 @@ contract DummyEir is EntityIdentityRecord {
         return bytes32(0);
     }
 
+    function revoke() public {
+        revoked = true;
+    }
 }

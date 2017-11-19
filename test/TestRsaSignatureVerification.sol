@@ -10,7 +10,6 @@ contract TestRsaSignatureVerification {
 
     function testVerifyRSASHA256Signature_Keysize512() public {
         bytes32 signedMsg = sha256("abc");
-
         bytes memory paddedData = hex"0001ffffffffffffffffffff003031300d060960864801650304020105000420ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
         bytes memory N = hex"84d2bfadade220628b6d88bb0739dc480fdf164937784a44c42828fb4bbad31687cfaccc73ac9d89722c280eba5165281dcbfba1e12a6e37d3a329285397e5bf";
         uint e = 65537;
@@ -19,7 +18,7 @@ contract TestRsaSignatureVerification {
         bytes memory paddedDataMsg = hex"0000000000000000000000000000000000000000000000000000000000000000";
         BytesUtils.memcopy(paddedData, paddedData.length - signedMsg.length, paddedDataMsg, 0, signedMsg.length);
         Assert.equal(keccak256(signedMsg) == keccak256(paddedDataMsg), true, "PKCS1 padded message should contain SHA256 hashed message value");
-        Assert.equal(RsaVerify.rsaverify(paddedData, N, e, S), true, "Padded data should be equal to the data recovered from signature");
+        Assert.equal(RsaVerify.verifySignature(paddedData, N, e, S), true, "Padded data should be equal to the data recovered from signature");
     }
 
     function testVerifyRSASHA256Signature_Keysize1024() public {
@@ -33,7 +32,7 @@ contract TestRsaSignatureVerification {
         bytes memory paddedDataMsg = hex"0000000000000000000000000000000000000000000000000000000000000000";
         BytesUtils.memcopy(paddedData, paddedData.length - signedMsg.length, paddedDataMsg, 0, signedMsg.length);
         Assert.equal(keccak256(signedMsg) == keccak256(paddedDataMsg), true, "PKCS1 padded message should contain SHA256 hashed message value");
-        Assert.equal(RsaVerify.rsaverify(paddedData, N, e, S), true, "Padded data should be equal to the data recovered from signature");
+        Assert.equal(RsaVerify.verifySignature(paddedData, N, e, S), true, "Padded data should be equal to the data recovered from signature");
     }
 
     function testVerifyRSASHA256Signature_Keysize2048() public {
@@ -47,7 +46,7 @@ contract TestRsaSignatureVerification {
         bytes memory paddedDataMsg = hex"0000000000000000000000000000000000000000000000000000000000000000";
         BytesUtils.memcopy(paddedData, paddedData.length - signedMsg.length, paddedDataMsg, 0, signedMsg.length);
         Assert.equal(keccak256(signedMsg) == keccak256(paddedDataMsg), true, "PKCS1 padded message should contain SHA256 hashed message value");
-        Assert.equal(RsaVerify.rsaverify(paddedData, N, e, S), true, "Padded data should be equal to the data recovered from signature");
+        Assert.equal(RsaVerify.verifySignature(paddedData, N, e, S), true, "Padded data should be equal to the data recovered from signature");
     }
 
     function testVerifyRSASHA256Signature_Keysize4096() public {
@@ -61,6 +60,6 @@ contract TestRsaSignatureVerification {
         bytes memory paddedDataMsg = hex"0000000000000000000000000000000000000000000000000000000000000000";
         BytesUtils.memcopy(paddedData, paddedData.length - signedMsg.length, paddedDataMsg, 0, signedMsg.length);
         Assert.equal(keccak256(signedMsg) == keccak256(paddedDataMsg), true, "PKCS1 padded message should contain SHA256 hashed message value");
-        Assert.equal(RsaVerify.rsaverify(paddedData, N, e, S), true, "Padded data should be equal to the data recovered from signature");
+        Assert.equal(RsaVerify.verifySignature(paddedData, N, e, S), true, "Padded data should be equal to the data recovered from signature");
     }
 }

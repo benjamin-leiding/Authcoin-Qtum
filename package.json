@@ -19,11 +19,13 @@
   },
   "devDependencies": {
     "concurrently": "^3.5.0",
-    "ethereumjs-testrpc": "^5.0.1",
+    "ethereumjs-testrpc": "^6.0.3",
     "npm-run-all": "^4.1.1",
     "solidity-coverage": "^0.2.7",
     "solium": "^0.5.5",
     "truffle": "^v4.0.0-beta.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "chai": "^4.1.2"
+  }
 }
