@@ -1,15 +1,12 @@
 {
   "package_name": "authcoin",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Authcoin validation and authentication contracts",
-  "authors": [
-    "Author <firstname.lastname@gmail.com>"
-  ],
   "keywords": [
+    "authcoin",
     "solidity",
     "ethereum",
-    "contracts",
-    "authcoin"
+    "smart contracts"
   ],
   "dependencies": {
     "zeppelin": "^1.3.0"
