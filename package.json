@@ -1,7 +1,7 @@
 {
   "name": "authcoin",
   "version": "1.0.0",
-  "description": "Contracts for Authcoin",
+  "description": "Solidity Smart Contracts for Authcoin",
   "license": "MIT",
   "scripts": {
     "compile": "truffle compile",
@@ -9,7 +9,7 @@
     "deploy": "truffle deploy",
     "postinstall": "truffle install",
     "console": "truffle console",
-    "testrpc": "testrpc -l 4712388",
+    "testrpc": "testrpc --gasLimit 11000000",
     "testrpc:coverage": "node_modules/.bin/testrpc-sc --port 8555",
     "truffle-test": "truffle test",
     "test": "run-p --aggregate-output --race testrpc truffle-test",
