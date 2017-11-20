@@ -8,6 +8,7 @@ import "../contracts/ChallengeRecord.sol";
 import "../contracts/EntityIdentityRecord.sol";
 import "./helpers/DummyEirFactory.sol";
 import "./helpers/ErrorProxy.sol";
+import "../contracts/signatures/RsaSignatureVerifier.sol";
 
 
 contract TestChallengeResponseRecord {
@@ -19,6 +20,7 @@ contract TestChallengeResponseRecord {
     function beforeAll() {
         ac = new AuthCoin();
         ac.registerEirFactory(new DummyEirFactory(), bytes32("dummy"));
+        ac.registerSignatureVerifier(new RsaSignatureVerifier(), "dummy");
         ac.registerEir("dummy", 1, block.timestamp, new bytes(42), false, new bytes32[](0), bytes32(0x0), new bytes(128));
         ac.registerEir("dummy", 2, block.timestamp, new bytes(42), false, new bytes32[](0), bytes32(0x0), new bytes(128));
         verifier = ac.getEir(1);

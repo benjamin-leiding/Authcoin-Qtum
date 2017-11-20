@@ -6,7 +6,7 @@ import "truffle/DeployedAddresses.sol";
 import "../contracts/AuthCoin.sol";
 import "./helpers/DummyEirFactory.sol";
 import "./helpers/ErrorProxy.sol";
-
+import "../contracts/signatures/RsaSignatureVerifier.sol";
 
 contract TestAuthCoinContract {
 
@@ -36,6 +36,8 @@ contract TestAuthCoinContract {
     function testRegisterDummyEir() {
         AuthCoin ac = new AuthCoin();
         ac.registerEirFactory(new DummyEirFactory(), "dummy");
+        ac.registerSignatureVerifier(new RsaSignatureVerifier(), "dummy");
+
         bytes memory input = new bytes(42);
         var hash = bytes32(0x0);
         var signature = new  bytes(128);

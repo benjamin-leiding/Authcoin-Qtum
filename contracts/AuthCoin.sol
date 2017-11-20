@@ -8,9 +8,8 @@ import "./ChallengeResponseRecord.sol";
 import "./ValidationAuthenticationEntry.sol";
 import "./EntityIdentityRecordFactory.sol";
 import "./PublicKeyEntityIdentityRecordFactory.sol";
-import "./signatures/RsaVerify.sol";
-import "./signatures/ECVerify.sol";
-import "./utils/BytesUtils.sol";
+import "./signatures/SignatureVerifier.sol";
+
 
 // Main entry point for Authcoin protocol.
 contract AuthCoin is Ownable {
@@ -34,6 +33,9 @@ contract AuthCoin is Ownable {
     // stores known EIR factory contracts (eir type =>  EntityIdentityRecordFactory)
     mapping (bytes32 => EntityIdentityRecordFactory) private factories;
 
+    // stores known signature verifier contracts (eir type =>  SignatureVerifier)
+    mapping (bytes32 => SignatureVerifier) private signatureVerifiers;
+
     // stores the addresses of EIR factory
     address[] private factoryList;
 
@@ -43,6 +45,7 @@ contract AuthCoin is Ownable {
     event LogNewChallengeResponseRecord(ChallengeResponseRecord rr, int id, int vaeId, int crId);
     event LogNewVAE(address a, int id);
     event LogNewEirFactory(address a, bytes32 eirType);
+    event LogNewSignatureVerifier(address a, bytes32 eirType);
 
     function AuthCoin() {
         // register default factory
@@ -66,6 +69,8 @@ contract AuthCoin is Ownable {
         bytes signature) public returns (bool)
     {
         require(factories[eirType] != address(0));
+        require(signatureVerifiers[eirType] != address(0));
+
         //TODO check id?
         EntityIdentityRecordFactory f = factories[eirType];
         EntityIdentityRecord eir = f.create(
@@ -87,23 +92,16 @@ contract AuthCoin is Ownable {
         return true;
     }
 
-    function revokeEir(bytes publicKey, bytes directKeyRevocationSignature, bytes32 tempType) public returns (bool) {
-        EntityIdentityRecord eir = getEirByContentHash(keccak256(publicKey));
+    function revokeEir(bytes signature, bytes signer) public returns (bool) {
+        EntityIdentityRecord eir = getEirByContentHash(keccak256(signer));
         require(address(eir) != address(0));
+        SignatureVerifier signatureVerifier = signatureVerifiers[eir.getType()];
+        require(address(signatureVerifier) != address(0));
 
-        // TODO: Refactor
-        if(bytes32("rsaPublicKey") == tempType) {
-            if(RsaVerify.verifyDirectKeySignature(directKeyRevocationSignature, publicKey)) {
-                eir.revoke();
-                LogRevokedEir(eir.getId());
-                return true;
-            }
-        } else if(bytes32("ecPublicKeyAddress") == tempType) {
-            if(ECVerify.verifyDirectKeySignature(directKeyRevocationSignature, publicKey)) {
-                eir.revoke();
-                LogRevokedEir(eir.getId());
-                return true;
-            }
+        if(signatureVerifier.verifyDirectKeySignature(signature, signer)) {
+            eir.revoke();
+            LogRevokedEir(eir.getId());
+            return true;
         }
 
         return false;
@@ -228,6 +226,20 @@ contract AuthCoin is Ownable {
         factories[eirType] = factory;
         factoryList.push(address(factory));
         LogNewEirFactory(address(factory), eirType);
+        return true;
+    }
+
+    /**
+    * @dev Registers signature verifier for some type of EIR. Registering EIR requires corresponding signature
+    *      verifier.
+    *
+    * @param signatureVerifier signature verifier
+    * @param eirType EIR type the signature verifier is implemented
+    * @return true if signature verifier registration is successful.
+    */
+    function registerSignatureVerifier(SignatureVerifier signatureVerifier, bytes32 eirType) onlyOwner public returns (bool) {
+        signatureVerifiers[eirType] = signatureVerifier;
+        LogNewSignatureVerifier(address(signatureVerifier), eirType);
         return true;
     }
 
