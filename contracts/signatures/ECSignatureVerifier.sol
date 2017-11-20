@@ -35,7 +35,8 @@ contract ECSignatureVerifier is SignatureVerifier {
         return verifySignature(messageHash, signature, BytesUtils.bytesToAddress(signer));
     }
 
-    function verifySelfSignature(bytes signature, bytes signer) public view returns (bool) {
+    function verifyDirectKeySignature(bytes signature, bytes signer) public view returns (bool) {
         return verify(signer, signature, signer);
     }
+
 }

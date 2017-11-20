@@ -15,7 +15,7 @@ contract RsaSignatureVerifier is SignatureVerifier {
         return modexpSuccess == true && keccak256(modexpOutput) == keccak256(message);
     }
 
-    function verifySelfSignature(bytes signature, bytes signer) public view returns (bool) {
+    function verifyDirectKeySignature(bytes signature, bytes signer) public view returns (bool) {
         var (modexpSuccess, modexpOutput) = ModexpPrecompile.modexp(signature, 65537, signer);
         bytes32 publicKeySHA256Hash = BytesUtils.copyToBytes32(modexpOutput, modexpOutput.length - 32);
         return modexpSuccess == true && publicKeySHA256Hash == sha256(BytesUtils.bytesToString(signer));

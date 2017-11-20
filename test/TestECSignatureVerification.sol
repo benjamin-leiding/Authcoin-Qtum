@@ -9,7 +9,7 @@ contract TestECSignatureVerification {
 
     ECSignatureVerifier ecSignatureVerifier;
 
-    function before() public {
+    function beforeAll() public {
         ecSignatureVerifier = new ECSignatureVerifier();
     }
 
@@ -28,6 +28,6 @@ contract TestECSignatureVerification {
         // Public key => Address: 0xfdaa33846e677adac0a66ba60029319698e58623
         bytes memory publicKeyAddress = hex'fdaa33846e677adac0a66ba60029319698e58623';
         bytes memory signature = hex"27dd01b872b09b6007e5f401494caeb75fbc21e61836b1f9d875d07fc468dcb825bf76eaa6cf7090c6a3e365c3e7b1f1bf7a67707f6c0f92dd3e3aa9ae9e7a3b00";
-        Assert.isTrue(ecSignatureVerifier.verifySelfSignature(signature, publicKeyAddress), "Invalid signature or signature does not contain public key address");
+        Assert.isTrue(ecSignatureVerifier.verifyDirectKeySignature(signature, publicKeyAddress), "Invalid signature or signature does not contain public key address");
     }
 }

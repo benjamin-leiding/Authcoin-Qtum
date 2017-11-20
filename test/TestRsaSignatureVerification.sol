@@ -10,7 +10,7 @@ contract TestRsaSignatureVerification {
 
     RsaSignatureVerifier rsaSignatureVerifier;
 
-    function before() public {
+    function beforeAll() public {
         rsaSignatureVerifier = new RsaSignatureVerifier();
     }
 

@@ -8,6 +8,7 @@ import "../contracts/ChallengeRecord.sol";
 import "../contracts/EntityIdentityRecord.sol";
 import "./helpers/DummyEirFactory.sol";
 import "./helpers/ErrorProxy.sol";
+import "../contracts/signatures/RsaSignatureVerifier.sol";
 
 
 contract TestChallengeRecord {
@@ -19,6 +20,7 @@ contract TestChallengeRecord {
     function beforeEachCreateAuthCoinContract() {
         ac = new AuthCoin();
         ac.registerEirFactory(new DummyEirFactory(), bytes32("dummy"));
+        ac.registerSignatureVerifier(new RsaSignatureVerifier(), "dummy");
     }
 
     function beforeEachRegisterVerifierEIR() {

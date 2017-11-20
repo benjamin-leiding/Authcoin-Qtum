@@ -98,7 +98,7 @@ contract AuthCoin is Ownable {
         SignatureVerifier signatureVerifier = signatureVerifiers[eir.getType()];
         require(address(signatureVerifier) != address(0));
 
-        if(signatureVerifier.verify(signature, signer)) {
+        if(signatureVerifier.verifyDirectKeySignature(signature, signer)) {
             eir.revoke();
             LogRevokedEir(eir.getId());
             return true;

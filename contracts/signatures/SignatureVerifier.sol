@@ -20,6 +20,6 @@ contract SignatureVerifier {
     * @param signer signer of signature
     * @return true if hash of signer is contained in signature.
     */
-    function verifySelfSignature(bytes signature, bytes signer) public view returns (bool);
+    function verifyDirectKeySignature(bytes signature, bytes signer) public view returns (bool);
 
 }
