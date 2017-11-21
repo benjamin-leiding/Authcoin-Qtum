@@ -1,26 +1,93 @@
 pragma solidity ^0.4.17;
 
-// interface for different type of entity identity records
+
+/**
+* @dev  Entity Identity Record (EIR) contains information that links an entity to a certain
+*       identity and the corresponding public key or certificate. EIR is created during the key
+*       generation process and posted to the blockchain. 'content' field is used to store public
+*       key or certificate and it must be unique.
+*/
 contract EntityIdentityRecord {
 
-    function getId() public returns (int);
+    //
+    bytes32 private id;
 
-    function getTimestamp() public returns (uint);
+    uint private timestamp; // TODO change to block.number
 
-    function isRevoked() public returns (bool);
+    bytes private content;
 
-    function getOwner() public returns (address);
+    bytes32 private contentType;
 
-    function getType() public returns (bytes32);
+    bool private revoked;
 
-    function getContent() public returns (bytes);
+    bytes32[] private identifiers;
 
-    function getIdentifier(uint index) public returns (bytes32);
+    bytes32 private hash;
 
-    function getIdentifiersCount() public returns (uint);
+    bytes private signature;
 
-    // TODO: onlyOwner
-    function revoke() public;
-    //function getHash() public returns(bytes32);
-    //function getSignature() public returns(bytes32);
+    // creator of the contract.
+    address private creator;
+
+    function EntityIdentityRecord(
+        bytes32[] _identifiers,
+        bytes _content,
+        bytes32 _contentType,
+        bytes32 _hash,
+        bytes _signature,
+        address _creator) {
+        id = keccak256(_content);
+        timestamp = block.timestamp;
+        content = _content;
+        contentType = _contentType;
+        revoked = false;
+        identifiers = _identifiers;
+        hash = _hash;
+        signature = _signature;
+        creator = _creator;
+    }
+
+    function getId() public view returns (bytes32) {
+        return id;
+    }
+
+    function getTimestamp() public view returns (uint) {
+        return timestamp;
+    }
+
+    function getContent() public view returns (bytes) {
+        return content;
+    }
+
+    function getContentType() public view returns (bytes32) {
+        return contentType;
+    }
+
+    function isRevoked() public view returns (bool) {
+        return revoked;
+    }
+
+    function getIdentifiersCount() public view returns (uint) {
+        return identifiers.length;
+    }
+
+    function getIdentifier(uint index) public view returns (bytes32) {
+        return identifiers[index];
+    }
+
+    function getIdentifiers() public view returns (bytes32[]) {
+        return identifiers;
+    }
+
+    function getCreator() public view returns (address) {
+        return creator;
+    }
+
+    // TODO getHash
+    // TODO getSignature
+
+    function revoke() public {// TODO unsafe operation
+        revoked = true;
+    }
+
 }

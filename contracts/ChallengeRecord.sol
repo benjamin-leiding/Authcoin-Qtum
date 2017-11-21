@@ -8,19 +8,19 @@ import "./EntityIdentityRecord.sol";
 contract ChallengeRecord {
 
     // challenge request identifier
-    int private id;
+    bytes32 private id;
 
     // validation & authentication entry (VAE) id used to track the VAE throughout the hole V&A process.
-    int private vaeId;
+    bytes32 private vaeId;
 
-    // time of the block when the challenge request was added to the BC
+    // number of the block when the challenge request was added to the BC
     uint private timestamp;
 
     // type of the challenge.
     bytes32 private challengeType;
 
     // description of the challenge
-    bytes32 private challenge;
+    bytes private challenge;
 
     // verifier EIR
     EntityIdentityRecord private verifierEir;
@@ -35,11 +35,10 @@ contract ChallengeRecord {
     address private owner;
 
     function ChallengeRecord(
-        int _id,
-        int _vaeId,
-        uint _timestamp,
+        bytes32 _id,
+        bytes32 _vaeId,
         bytes32 _type,
-        bytes32 _challenge,
+        bytes _challenge,
         EntityIdentityRecord _verifierEir,
         EntityIdentityRecord _targetEir,
         bytes32 _hash,
@@ -47,7 +46,7 @@ contract ChallengeRecord {
         address _authCoinAddress) {
         id = _id;
         vaeId = _vaeId;
-        timestamp = _timestamp;
+        timestamp = block.number;
         challengeType = _type;
         challenge = _challenge;
         verifierEir = _verifierEir;
@@ -57,11 +56,11 @@ contract ChallengeRecord {
         owner = _authCoinAddress;
     }
 
-    function getId() public view returns(int) {
+    function getId() public view returns(bytes32) {
         return id;
     }
 
-    function getVaeId() public view returns (int) {
+    function getVaeId() public view returns (bytes32) {
         return vaeId;
     }
 

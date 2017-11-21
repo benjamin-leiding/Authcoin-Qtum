@@ -6,8 +6,6 @@ import "./EntityIdentityRecord.sol";
 import "./ChallengeRecord.sol";
 import "./ChallengeResponseRecord.sol";
 import "./ValidationAuthenticationEntry.sol";
-import "./EntityIdentityRecordFactory.sol";
-import "./PublicKeyEntityIdentityRecordFactory.sol";
 import "./signatures/SignatureVerifier.sol";
 
 
@@ -15,90 +13,96 @@ import "./signatures/SignatureVerifier.sol";
 contract AuthCoin is Ownable {
 
     // stores EIR values (eir_id => EntityIdentityRecord)
-    mapping (int => EntityIdentityRecord) private eirs;
-    mapping (bytes32 => int) private contentHashToEirId;
+    mapping (bytes32 => EntityIdentityRecord) private eirIdToEir;
+
+    // stores the id's of Entity Identity Records
+    bytes32[] private eirIdList;
+
+    // stores the values of ValidationAuthenticationEntry (vae_id => ValidationAuthenticationEntry)
+    mapping (bytes32 => ValidationAuthenticationEntry) private vaeIdToVae;
+
+    // stores the id's of ValidationAuthenticationEntry
+    bytes32[] private vaeIdList;
+
+    mapping (int => EntityIdentityRecord) private eirs; // TODO remove
+    mapping (bytes32 => int) private contentHashToEirId; // TODO remove
 
     // stores the addresses of Entity Identity Records
-    address[] private eirList;
+    address[] private eirList; // TODO remove
 
     // stores challenge record values (cr_id => ChallengeRecord)
     mapping (int => ChallengeRecord) private challenges;
 
     // stores the values of ValidationAuthenticationEntry (vae_id => ValidationAuthenticationEntry)
-    mapping (int => ValidationAuthenticationEntry) private vaes;
+    mapping (int => ValidationAuthenticationEntry) private vaes; // TODO remove
 
     // stores the addresses of ValidationAuthenticationEntry
-    address[] private vaesList;
-
-    // stores known EIR factory contracts (eir type =>  EntityIdentityRecordFactory)
-    mapping (bytes32 => EntityIdentityRecordFactory) private factories;
+    address[] private vaesList; // TODO remove
 
     // stores known signature verifier contracts (eir type =>  SignatureVerifier)
     mapping (bytes32 => SignatureVerifier) private signatureVerifiers;
 
-    // stores the addresses of EIR factory
-    address[] private factoryList;
+    event LogNewEir(bytes32 id, EntityIdentityRecord eir, bytes32 contentType);
 
-    event LogNewEir(EntityIdentityRecord a, bytes32 eirType, int id);
-    event LogRevokedEir(int id);
-    event LogNewChallengeRecord(ChallengeRecord cr, bytes32 challengeType, int id, int vaeId);
+    event LogRevokedEir(bytes32 id);
+
+    event LogNewChallengeRecord(ChallengeRecord cr, bytes32 challengeType, bytes32 id, bytes32 vaeId);
+
     event LogNewChallengeResponseRecord(ChallengeResponseRecord rr, int id, int vaeId, int crId);
-    event LogNewVAE(address a, int id);
-    event LogNewEirFactory(address a, bytes32 eirType);
-    event LogNewSignatureVerifier(address a, bytes32 eirType);
+
+    event LogNewVae(address vaeAddress, bytes32 id);
+
+    event LogNewSignatureVerifier(SignatureVerifier a, bytes32 eirType);
 
     function AuthCoin() {
-        // register default factory
-        PublicKeyEntityIdentityRecordFactory f = new PublicKeyEntityIdentityRecordFactory();
-        factories[bytes32("pub-key")] = f;
-        factoryList.push(address(f));
+        //TODO default verifier
     }
 
     // Registers a new EIR
-    // TODO What kind of values are inside the identifiers in EIR? (e-mail, username, etc ?)
-    // TODO May I assume that EIR identifiers are unique? (probably not?)
-    // TODO Change the type of id 'parameter' to bytes32 or address?
     function registerEir(
-        bytes32 eirType,
-        int id,
-        uint timestamp,
-        bytes content,
-        bool revoked,
-        bytes32[] identifiers, // e-mail address, username, age, etc
-        bytes32 hash,
-        bytes signature) public returns (bool)
-    {
-        require(factories[eirType] != address(0));
-        require(signatureVerifiers[eirType] != address(0));
+        bytes _content,
+        bytes32 _contentType,
+        bytes32[] _identifiers, // e-mail address, username, age, etc
+        bytes32 _hash,
+        bytes _signature) public returns (bool) {
 
-        //TODO check id?
-        EntityIdentityRecordFactory f = factories[eirType];
-        EntityIdentityRecord eir = f.create(
-            id,
-            timestamp,
-            content,
-            revoked,
-            identifiers,
-            hash,
-            signature,
+        // ensure content type exists
+        require(signatureVerifiers[_contentType] != address(0));
+
+        // ensure EIR hash is correct
+        // TODO implement
+
+        // ensure signature is correct
+        // TODO implement
+
+        // calculate id and ensure it doesn't exist
+        var id = keccak256(_content);
+        require(eirIdToEir[id] == address(0));
+
+        // create new contract and store it
+        EntityIdentityRecord eir = new EntityIdentityRecord(
+            _identifiers,
+            _content,
+            _contentType,
+            _hash,
+            _signature,
             owner
         );
 
-        // TODO May I assume that EIR ID is unique? (probably not?)
-        eirs[id] = eir;
-        contentHashToEirId[keccak256(content)] = id;
-        eirList.push(address(eir));
-        LogNewEir(eir, eirType, id);
+        eirIdToEir[id] = eir;
+        eirIdList.push(id);
+
+        LogNewEir(id, eir, _contentType);
         return true;
     }
 
     function revokeEir(bytes signature, bytes signer) public returns (bool) {
-        EntityIdentityRecord eir = getEirByContentHash(keccak256(signer));
+        EntityIdentityRecord eir = eirIdToEir[keccak256(signer)];
         require(address(eir) != address(0));
-        SignatureVerifier signatureVerifier = signatureVerifiers[eir.getType()];
+        SignatureVerifier signatureVerifier = signatureVerifiers[eir.getContentType()];
         require(address(signatureVerifier) != address(0));
 
-        if(signatureVerifier.verifyDirectKeySignature(signature, signer)) {
+        if (signatureVerifier.verifyDirectKeySignature(signature, signer)) {
             eir.revoke();
             LogRevokedEir(eir.getId());
             return true;
@@ -107,94 +111,83 @@ contract AuthCoin is Ownable {
         return false;
     }
 
-
     // Registers a new challenge record.
     function registerChallengeRecord(
-        int id,
-        int vaeId,
-        uint timestamp,
-        bytes32 challengeType,
-        bytes32 challenge,
-        int verifierEir,
-        int targetEir,
-        bytes32 hash,
-        bytes signature) public returns (bool)
+        bytes32 _id,
+        bytes32 _vaeId,
+        bytes32 _challengeType,
+        bytes _challenge,
+        bytes32 _verifierEir,
+        bytes32 _targetEir,
+        bytes32 _hash,
+        bytes _signature) public returns (bool)
     {
-        // TODO validate challenge type
-        // TODO support of customizable challenges
-        EntityIdentityRecord verifier = getEntityIdentityRecord(verifierEir);
-        EntityIdentityRecord target = getEntityIdentityRecord(targetEir);
 
-        ValidationAuthenticationEntry vae = vaes[vaeId];
+        // ensure CR hash is correct
+        // TODO implement
 
-        var isVerifier = (address(vae) == address(0));
+        // ensure CR signature is correct
+        // TODO implement
 
-        if (isVerifier) {
-            // this is the first VAE with given identifier. create an entry for this vaeId
-            vae = new ValidationAuthenticationEntry(vaeId, verifier, target, owner);
-            vaes[vae.getVaeId()] = vae;
-            vaesList.push(address(vae));
-            LogNewVAE(vae, vaeId);
+        // verifier exists
+        EntityIdentityRecord verifier = getEir(_verifierEir);
+        require(address(verifier) != address(0));
+
+        // target exists
+        EntityIdentityRecord target = getEir(_targetEir);
+        require(address(target) != address(0));
+
+        ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
+        var isInitialized = (address(vae)!=address(0));
+
+        if (!isInitialized) {
+            vae = new ValidationAuthenticationEntry(_vaeId, owner);
+            vaeIdToVae[_vaeId] = vae;
+            vaeIdList.push(_vaeId);
+            LogNewVae(vae, _vaeId);
         }
 
         ChallengeRecord cr = new ChallengeRecord(
-            id,
-            vaeId,
-            timestamp,
-            challengeType,
-            challenge,
+            _id,
+            _vaeId,
+            _challengeType,
+            _challenge,
             verifier,
             target,
-            hash,
-            signature,
+            _hash,
+            _signature,
             owner
         );
-        challenges[cr.getId()] = cr;
-        if (isVerifier) {
-            require(vae.setChallenge(cr, 0));
-        } else {
-            require(vae.setChallenge(cr, 1));
-        }
+        vae.addChallengeRecord(cr);
+
         LogNewChallengeRecord(
             cr,
-            challengeType,
+            _challengeType,
             cr.getId(),
-            vae.getVaeId()
+            cr.getVaeId()
         );
         return true;
     }
 
     // Registers a challenge response record.
     function registerChallengeResponse(
-        int vaeId,
-        int challengeId,
-        uint timestamp,
-        bytes32 response,
+        bytes32 vaeId,
+        bytes32 challengeId,
+        bytes response,
         bytes32 hash,
         bytes signature) public returns (bool)
     {
-
-        // check vae id. vae must exist and should be in correct status.
-        ValidationAuthenticationEntry vae = vaes[vaeId];
+        ValidationAuthenticationEntry vae = vaeIdToVae[vaeId];
         require(address(vae) != address(0));
-        require(vae.getStatus() == 1);
-
-        // check challenge record id. challengeId must be equal to verifier or target challenge id.
-        ChallengeRecord verifierChallenge = vae.getVerifierChallengeRecord();
-        ChallengeRecord targetChallenge = vae.getTargetChallengeRecord();
-
-        require(verifierChallenge.getId() == challengeId || targetChallenge.getId() == challengeId);
         ChallengeResponseRecord rr = new ChallengeResponseRecord(
             vaeId,
             challengeId,
-            timestamp,
             response,
             hash,
             signature,
             owner
         );
-
-        require(vae.setChallengeResponseRecord(rr));
+        require(vae.addChallengeResponseRecord(rr));
         return true;
     }
 
@@ -218,17 +211,6 @@ contract AuthCoin is Ownable {
         return true;
     }
 
-    // Registers a new factory that can be used to create new EIRs. This method can be called
-    // by the owner of the AuthCoin contract. Because of security reasons the factory contract
-    // must be owned by the same address that owens the AuthCoin contract.
-    function registerEirFactory(EntityIdentityRecordFactory factory, bytes32 eirType) onlyOwner public returns (bool) {
-        require(factories[eirType] == address(0));
-        factories[eirType] = factory;
-        factoryList.push(address(factory));
-        LogNewEirFactory(address(factory), eirType);
-        return true;
-    }
-
     /**
     * @dev Registers signature verifier for some type of EIR. Registering EIR requires corresponding signature
     *      verifier.
@@ -239,17 +221,17 @@ contract AuthCoin is Ownable {
     */
     function registerSignatureVerifier(SignatureVerifier signatureVerifier, bytes32 eirType) onlyOwner public returns (bool) {
         signatureVerifiers[eirType] = signatureVerifier;
-        LogNewSignatureVerifier(address(signatureVerifier), eirType);
+        LogNewSignatureVerifier(signatureVerifier, eirType);
         return true;
     }
 
     // Returns the address of the EIR. This address can be used to access the actual EIR information.
-    function getEir(int eirId) public view returns (EntityIdentityRecord) {
-        return eirs[eirId];
+    function getEir(bytes32 eirId) public view returns (EntityIdentityRecord) {
+        return eirIdToEir[eirId];
     }
 
-    function getEirByContentHash(bytes32 contentHash) public view returns (EntityIdentityRecord) {
-        return eirs[contentHashToEirId[contentHash]];
+    function getVae(bytes32 vaeId) public view returns (ValidationAuthenticationEntry) {
+        return vaeIdToVae[vaeId];
     }
 
     function getChallengeRecord(int id) public view returns (ChallengeRecord) {
@@ -257,21 +239,18 @@ contract AuthCoin is Ownable {
     }
 
     function getEntityIdentityRecord(int eirId) private view returns (EntityIdentityRecord) {
-        EntityIdentityRecord eir = getEir(eirId);
+        EntityIdentityRecord eir = getEir(bytes32(eirId));
+        // TODO fix
         require(address(eir) != address(0));
         return eir;
     }
 
-    function getEirFactoryCount() public view returns (uint) {
-        return factoryList.length;
-    }
-
     function getEirCount() public view returns (uint) {
-        return eirList.length;
+        return eirIdList.length;
     }
 
-    function getVAECount() public view returns (uint) {
-        return vaesList.length;
+    function getVaeCount() public view returns (uint) {
+        return vaeIdList.length;
     }
 
 }
