@@ -30,7 +30,7 @@ contract ValidationAuthenticationEntry {
     bytes32[] private challengeIdArray;
 
     // cr_id => ChallengeResponseRecord
-    mapping(int => ChallengeResponseRecord) private responses;
+    mapping(bytes32 => ChallengeResponseRecord) private responses;
 
     // cr_id array
     bytes32[] private responseIdArray;
@@ -107,7 +107,7 @@ contract ValidationAuthenticationEntry {
         // TODO rr is signed by correct EIR
 
         responses[_rr.getChallengeRecordId()] = _rr;
-        responseIdArray.push(_rr.getId());
+        responseIdArray.push(_rr.getChallengeRecordId());
         return true;
     }
 

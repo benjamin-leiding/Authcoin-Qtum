@@ -24,21 +24,6 @@ contract AuthCoin is Ownable {
     // stores the id's of ValidationAuthenticationEntry
     bytes32[] private vaeIdList;
 
-    mapping (int => EntityIdentityRecord) private eirs; // TODO remove
-    mapping (bytes32 => int) private contentHashToEirId; // TODO remove
-
-    // stores the addresses of Entity Identity Records
-    address[] private eirList; // TODO remove
-
-    // stores challenge record values (cr_id => ChallengeRecord)
-    mapping (int => ChallengeRecord) private challenges;
-
-    // stores the values of ValidationAuthenticationEntry (vae_id => ValidationAuthenticationEntry)
-    mapping (int => ValidationAuthenticationEntry) private vaes; // TODO remove
-
-    // stores the addresses of ValidationAuthenticationEntry
-    address[] private vaesList; // TODO remove
-
     // stores known signature verifier contracts (eir type =>  SignatureVerifier)
     mapping (bytes32 => SignatureVerifier) private signatureVerifiers;
 
@@ -193,18 +178,16 @@ contract AuthCoin is Ownable {
 
     // Registers a challenge response signature record.
     function registerSignatureRecord(
-        int _id,
-        int _vaeId,
-        int _responseRecordId,
-        uint _timestamp,
+        bytes32 _id,
+        bytes32 _vaeId,
+        bytes32 _responseRecordId,
         uint _expirationDate,
         bool _successful,
         bytes32[] _hash,
         bytes _signature) public returns (bool)
     {
-
         // check vae id. vae must exist and should be in correct status.
-        ValidationAuthenticationEntry vae = vaes[_vaeId];
+        ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
         require(address(vae) != address(0));
         require(vae.getStatus() == 1);
 
@@ -234,15 +217,9 @@ contract AuthCoin is Ownable {
         return vaeIdToVae[vaeId];
     }
 
-    function getChallengeRecord(int id) public view returns (ChallengeRecord) {
-        return challenges[id];
-    }
-
-    function getEntityIdentityRecord(int eirId) private view returns (EntityIdentityRecord) {
-        EntityIdentityRecord eir = getEir(bytes32(eirId));
-        // TODO fix
-        require(address(eir) != address(0));
-        return eir;
+    function getChallengeRecord(bytes32 id) public view returns (ChallengeRecord) {
+        //TODO implement
+        return ChallengeRecord(address(0));
     }
 
     function getEirCount() public view returns (uint) {

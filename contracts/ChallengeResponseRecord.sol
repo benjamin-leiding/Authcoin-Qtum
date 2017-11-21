@@ -7,7 +7,7 @@ contract ChallengeResponseRecord {
     bytes32 private vaeId;
     bytes32 private challengeRecordId;
     uint private blockNumber;
-    bytes32 private response;
+    bytes private response;
     bytes32 private hash;
     bytes private signature;
 
