@@ -7,6 +7,7 @@ import "./ChallengeRecord.sol";
 import "./ChallengeResponseRecord.sol";
 import "./ValidationAuthenticationEntry.sol";
 import "./signatures/SignatureVerifier.sol";
+import "./signatures/DummyVerifier.sol";
 
 
 /**
@@ -54,7 +55,7 @@ contract AuthCoin is Ownable {
     event LogNewSignatureVerifier(SignatureVerifier a, bytes32 eirType);
 
     function AuthCoin() {
-        //TODO add default verifier
+        registerSignatureVerifier(new DummyVerifier(), bytes32("test"));
     }
 
     /**
