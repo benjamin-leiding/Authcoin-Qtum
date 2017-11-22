@@ -24,21 +24,6 @@ contract ChallengeSignatureRecord {
 
     address private creator;
 
-    // require(challengeIdArray.length == 2);
-    // require(responseIdArray.length == 2);
-    // require(sigantureIdArray.length < 2);
-    // require(address(_sr) != address(0));
-
-    // challenge exists
-    // require(address(challenges[_sr.getChallengeRecordId()]) != address(0));
-    // challenge response exist
-    // require(address(responses[_sr.getChallengeRecordId()]) != address(0));
-    // challenge response doesn't exist
-    // require(address(signatures[_sr.getChallengeRecordId()]) == address(0));
-    // TODO sr is signed by correct EIR
-    // signatures[_sr.getChallengeRecordId()] = _sr;
-    // sigantureIdArray.push(_sr.getChallengeRecordId());
-
     function ChallengeSignatureRecord(
         bytes32 _vaeId,
         bytes32 _challengeRecordId,
