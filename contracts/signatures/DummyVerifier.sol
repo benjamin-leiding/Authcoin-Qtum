@@ -1,6 +1,8 @@
 pragma solidity ^0.4.17;
 
+
 import "./SignatureVerifier.sol";
+
 
 contract DummyVerifier is SignatureVerifier {
 

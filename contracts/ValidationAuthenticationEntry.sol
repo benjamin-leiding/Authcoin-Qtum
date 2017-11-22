@@ -68,7 +68,7 @@ contract ValidationAuthenticationEntry {
 
         // TODO CR is signed by correct EIR
 
-        if(challengeIdArray.length == 1) {
+        if (challengeIdArray.length == 1) {
             require(challenges[crId] == address(0)); // test ok
             ChallengeRecord previous = challenges[challengeIdArray[0]];
             require(previous.getVerifier() == _cr.getTarget()); // test ok

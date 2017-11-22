@@ -65,7 +65,8 @@ contract AuthCoin is Ownable {
         bytes32 _contentType,
         bytes32[] _identifiers, // e-mail address, username, age, etc
         bytes32 _hash,
-        bytes _signature) public returns (bool) {
+        bytes _signature) public returns (bool)
+    {
 
         // ensure content type exists
         require(signatureVerifiers[_contentType] != address(0));
