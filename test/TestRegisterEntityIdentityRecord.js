@@ -3,7 +3,7 @@ var AuthCoin = artifacts.require("AuthCoin");
 var DummyVerifier = artifacts.require("signatures/DummyVerifier");
 var EntityIdentityRecord = artifacts.require("EntityIdentityRecord");
 
-contract('AuthCoin', function (accounts) {
+contract('AuthCoin & EIR', function (accounts) {
 
     let authCoin
 
@@ -43,7 +43,6 @@ contract('AuthCoin', function (accounts) {
         assert.isNotOk( await eir.isRevoked())
         assert.equal(await eir.getIdentifiersCount(), 2)
         assert.equal(await eir.getIdentifier(0), util.bufferToHex(util.setLengthRight("test@mail.com", 32)))
-
 
         var event = events.get()
         assert.equal(event.length, 1);

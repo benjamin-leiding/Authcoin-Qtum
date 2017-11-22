@@ -4,7 +4,9 @@ pragma solidity ^0.4.17;
 import "./EntityIdentityRecord.sol";
 
 
-// Contains all information about the validation & authentication (V&A) challenge record.
+/**
+* @dev Contains all information about the validation & authentication (V&A) challenge record.
+*/
 contract ChallengeRecord {
 
     // challenge request identifier
@@ -14,7 +16,7 @@ contract ChallengeRecord {
     bytes32 private vaeId;
 
     // number of the block when the challenge request was added to the BC
-    uint private timestamp;
+    uint private blockNumber;
 
     // type of the challenge.
     bytes32 private challengeType;
@@ -46,7 +48,7 @@ contract ChallengeRecord {
         address _authCoinAddress) {
         id = _id;
         vaeId = _vaeId;
-        timestamp = block.number;
+        blockNumber = block.number;
         challengeType = _type;
         challenge = _challenge;
         verifierEir = _verifierEir;
@@ -64,12 +66,20 @@ contract ChallengeRecord {
         return vaeId;
     }
 
+    function getBlockNumber() public view returns (uint) {
+        return blockNumber;
+    }
+
     function getVerifier() public view returns (EntityIdentityRecord) {
         return verifierEir;
     }
 
     function getTarget() public view returns (EntityIdentityRecord) {
         return targetEir;
+    }
+
+    function getChallengeType() public view returns (bytes32) {
+        return challengeType;
     }
 
 }

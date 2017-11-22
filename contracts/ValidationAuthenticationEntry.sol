@@ -8,11 +8,11 @@ import "./EntityIdentityRecord.sol";
 
 /*
 * @dev Tracks and stores the information produced by the validation & authentication process. During the V&A process,
-*      the verifier and target:
-*            1. exchange challenges (CR - ChallengeRecord) with each other and
-*            2. create the corresponding responses (RR - ResponseRecord) and
-*            3. both entities evaluate the received responses and create corresponding signatures (SR - SignatureRecord)
-*               depending on whether they are satisfied with the received response or not.
+* the verifier and target:
+*   1. exchange challenges (CR - ChallengeRecord) with each other and
+*   2. create the corresponding responses (RR - ResponseRecord) and
+*   3. both entities evaluate the received responses and create corresponding signatures (SR - SignatureRecord)
+*      depending on whether they are satisfied with the received response or not.
 */
 contract ValidationAuthenticationEntry {
 
@@ -35,24 +35,7 @@ contract ValidationAuthenticationEntry {
     // cr_id array
     bytes32[] private responseIdArray;
 
-    // Challenge record submitted by verifier
-    ChallengeRecord private verifierChallenge; // TODO remove
-
-    // Challenge record submitted by target
-    ChallengeRecord private targetChallenge; // TODO remove
-
-    // Verifier's response to Target's challenge
-    ChallengeResponseRecord private verifierResponse; // TODO remove
-
-    // Target's response to Verifier's challenge
-    ChallengeResponseRecord private targetResponse; // TODO remove
-
-
-
-    address private creator; // TODO rename
-
-    // ChallengeSignatureRecord private verifierSignatureRecord;
-    // ChallengeSignatureRecord private targetSignatureRecord;
+    address private creator;
 
     // Constructor to create a new V&A entry.
     function ValidationAuthenticationEntry(
@@ -82,6 +65,9 @@ contract ValidationAuthenticationEntry {
         // 0 or 1 challenges
         require(challengeIdArray.length < 2); // test ok
         bytes32 crId = _cr.getId();
+
+        // TODO CR is signed by correct EIR
+
         if(challengeIdArray.length == 1) {
             require(challenges[crId] == address(0)); // test ok
             ChallengeRecord previous = challenges[challengeIdArray[0]];
@@ -115,25 +101,11 @@ contract ValidationAuthenticationEntry {
         return challengeIdArray.length;
     }
 
-    function getVerifierChallengeRecord() public view returns (ChallengeRecord) {
-        return verifierChallenge;
+    function getChallengeResponseCount() public view returns(uint) {
+        return responseIdArray.length;
     }
 
-    function getTargetChallengeRecord() public view returns (ChallengeRecord) {
-        return targetChallenge;
-    }
-
-    // Returns the challenge record.
-    // 0 = verifier
-    // 1 = target
-    function getChallengeRecord(int _type) private view returns (ChallengeRecord) {
-        if (_type == 0) {
-            return verifierChallenge;
-        }
-        return targetChallenge;
-    }
-
-    // Returns the status of the current V&A process. Returns one of the following values:
+    // Returns the status of current V&A process. Returns one of the following values:
     //    0 - waiting_challenge_record
     //    1 - waiting_challenge_response_record(s)
     //    2 - waiting_challenge_signature_record(s)
@@ -141,18 +113,8 @@ contract ValidationAuthenticationEntry {
     //    4 - revoked
     //    5 - successful
     function getStatus() public view returns (uint) {
-        if (targetChallenge == address(0) || verifierChallenge == address(0)) {
-            return 0;
-        }
-        if (verifierResponse == address(0) || targetResponse == address(0)) {
-            return 1;
-        }
-        /*
-        if (verifierSignatureRecord == address(0) || targetSignatureRecord == address(0)) {
-            return 2;
-        }
-    */
-        return 3;
+        // TODO implement
+        return 0;
     }
 
     modifier onlyCreator() {

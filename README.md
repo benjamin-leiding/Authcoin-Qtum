@@ -1,5 +1,11 @@
 # Introduction #
 
+Authcoin is an alternative approach to the commonly used public key infrastructures such as central authorities and the PGP web of 
+trust. It combines a challenge response-based validation and authentication process for domains, certificates, email accounts and 
+public keys with the advantages of a block chain-based storage system. Due to its transparent nature and public availability, it is 
+possible to track the whole validation and authentication process history of each entity in the Authcoin system which makes it much 
+more difficult to introduce sybil nodes and prevent such nodes from getting detected by genuine users.
+
 This repository contains Solidity smart contracts for Authcoin protocol. Current implementation contains the following functionality:
 
 * [Posting an entity identity record (EIR) to the blockchain](#eir_post)
@@ -26,9 +32,7 @@ following input parameters:
 
 | Name           | Type           | Description  |
 |:-------------- | :--------------| :----------- |
-| type           |int             | Type of the EIR. Used to select EIR factory that will be used for EIR creation.|
-| id             |int (change to bytes32?)| EIR identifier |
-| timestamp      |uint            | EIR creation date|
+| type           |bytes32         | Type of the EIR. Used to select EIR factory that will be used for EIR creation.|
 | content        |bytes           | Content of the EIR. It may contain a public key or a X509 certificate|
 | revoked        |bool            | Flag indicating whether EIR has been revoked |
 | identifiers    |bytes32[]       | List of identifiers|
@@ -79,7 +83,7 @@ TODO
 ```
 ## Posting a Challenge Response Record <a name="rr_post"></a> ##
 
-A challenge response record (RR) is creates as part of the validation and authentication process. The verifier and the 
+A challenge response record (RR) is created as part of the validation and authentication process. The verifier and the 
 target create responses to the corresponding challenge requests. A RR contains the response itself and related information. 
 
 RR can be registered by calling the [AuthCoin.registerChallengeResponse](contracts/AuthCoin.sol#L142) function. It has the following 

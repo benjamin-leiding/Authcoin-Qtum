@@ -1,7 +1,11 @@
 pragma solidity ^0.4.17;
 
 
-// Contains information about the challenge response.
+/**
+* @dev A challenge response record (RR) is created as part of the validation and authentication
+* process. The verifier and the target create responses to the corresponding challenge requests.
+* A RR contains the response itself and related information.
+*/
 contract ChallengeResponseRecord {
 
     bytes32 private vaeId;

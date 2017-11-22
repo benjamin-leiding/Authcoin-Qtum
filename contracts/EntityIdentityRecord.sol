@@ -2,17 +2,16 @@ pragma solidity ^0.4.17;
 
 
 /**
-* @dev  Entity Identity Record (EIR) contains information that links an entity to a certain
-*       identity and the corresponding public key or certificate. EIR is created during the key
-*       generation process and posted to the blockchain. 'content' field is used to store public
-*       key or certificate and it must be unique.
+* @dev Entity Identity Record (EIR) contains information that links an entity to a certain
+* identity and the corresponding public key or certificate. EIR is created during the key
+* generation process and posted to the blockchain. 'content' field is used to store public
+* key or certificate and it must be unique.
 */
 contract EntityIdentityRecord {
 
-    //
     bytes32 private id;
 
-    uint private timestamp; // TODO change to block.number
+    uint private blocNumber;
 
     bytes private content;
 
@@ -37,7 +36,7 @@ contract EntityIdentityRecord {
         bytes _signature,
         address _creator) {
         id = keccak256(_content);
-        timestamp = block.timestamp;
+        blocNumber = block.number;
         content = _content;
         contentType = _contentType;
         revoked = false;
@@ -51,8 +50,8 @@ contract EntityIdentityRecord {
         return id;
     }
 
-    function getTimestamp() public view returns (uint) {
-        return timestamp;
+    function getBlocNumber() public view returns (uint) {
+        return blocNumber;
     }
 
     function getContent() public view returns (bytes) {
