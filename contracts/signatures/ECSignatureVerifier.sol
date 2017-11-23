@@ -1,7 +1,9 @@
 pragma solidity ^0.4.17;
 
+
 import "./SignatureVerifier.sol";
 import "../utils/BytesUtils.sol";
+
 
 contract ECSignatureVerifier is SignatureVerifier {
 
@@ -27,7 +29,12 @@ contract ECSignatureVerifier is SignatureVerifier {
         if (v != 27 && v != 28)
             return false;
 
-        return signer ==  ecrecover(messageHash, v, r, s);
+        return signer == ecrecover(
+            messageHash,
+            v,
+            r,
+            s
+        );
     }
 
     function verify(bytes message, bytes signature, bytes signer) public view returns (bool) {

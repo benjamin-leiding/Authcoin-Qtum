@@ -1,2 +1,4 @@
 node_modules
 installed_contracts
+contracts/utils/BytesUtils.sol
+contracts/signatures/ModexpPrecompile.sol

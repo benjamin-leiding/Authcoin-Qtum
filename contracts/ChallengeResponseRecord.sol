@@ -1,46 +1,49 @@
 pragma solidity ^0.4.17;
 
 
-// Contains information about the challenge response.
+/**
+* @dev A challenge response record (RR) is created as part of the validation and authentication
+* process. The verifier and the target create responses to the corresponding challenge requests.
+* A RR contains the response itself and related information.
+*/
 contract ChallengeResponseRecord {
 
-    int private vaeId;
-    int private challengeRecordId;
-    uint private timestamp;
-    bytes32 private response;
+    bytes32 private vaeId;
+    bytes32 private challengeRecordId;
+    uint private blockNumber;
+    bytes private response;
     bytes32 private hash;
     bytes private signature;
 
     address private owner;
 
     function ChallengeResponseRecord(
-        int _vaeId,
-        int _challengeRecordId,
-        uint _timestamp,
-        bytes32 _response,
+        bytes32 _vaeId,
+        bytes32 _challengeRecordId,
+        bytes _response,
         bytes32 _hash,
         bytes _signature,
         address _authCoinAddress
     ) {
         vaeId = _vaeId;
         challengeRecordId = _challengeRecordId;
-        timestamp = _timestamp;
+        blockNumber = block.number;
         response = _response;
         owner = _authCoinAddress;
         hash = _hash;
         signature = _signature;
     }
 
-    function getVaeId() public constant returns(int) {
+    function getVaeId() public constant returns(bytes32) {
         return vaeId;
     }
 
-    function getChallengeRecordId() public constant returns(int) {
+    function getChallengeRecordId() public constant returns(bytes32) {
         return challengeRecordId;
     }
 
-    function getTimestamp() public constant returns(uint) {
-        return timestamp;
+    function getBlockNumber() public constant returns(uint) {
+        return blockNumber;
     }
 
     function getOwner() public constant returns(address) {
