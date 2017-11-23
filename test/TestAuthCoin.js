@@ -22,13 +22,15 @@ contract('AuthCoin', function (accounts) {
     it("should override old value if new verifier is added using already registered eir type", async function () {
         let dummyVerifier = await DummyVerifier.new(accounts[0])
         let dummyVerifier2 = await DummyVerifier.new(accounts[0])
+        let verifiers = await authCoin.getSignatureVerifierTypes()
+        assert.equal(verifiers.length, 1)
         await authCoin.registerSignatureVerifier(dummyVerifier.address, eirType)
         await authCoin.registerSignatureVerifier(dummyVerifier2.address, eirType)
 
         let verifier = await authCoin.getSignatureVerifier(eirType)
         assert.equal(dummyVerifier2.address, verifier)
-        let verifiers = await authCoin.getSignatureVerifierTypes()
-        assert.equal(verifiers.length, 1)
+        verifiers = await authCoin.getSignatureVerifierTypes()
+        assert.equal(verifiers.length, 2)
     })
 
     it("should return empty value if verifier doesn't exist", async function () {
@@ -36,14 +38,14 @@ contract('AuthCoin', function (accounts) {
         assert.equal(verifier, '0x0000000000000000000000000000000000000000')
     })
 
-    it("should return all verifier types know to AutCoin contract", async function () {
+    it("should return all verifier types known to AutCoin contract", async function () {
         let dummyVerifier = await DummyVerifier.new(accounts[0])
         await authCoin.registerSignatureVerifier(dummyVerifier.address, eirType)
         await authCoin.registerSignatureVerifier(dummyVerifier.address, eirType)
         await authCoin.registerSignatureVerifier(dummyVerifier.address, util.bufferToHex(util.setLengthRight("dummy2", 32)))
 
         let verifiers = await authCoin.getSignatureVerifierTypes()
-        assert.equal(verifiers.length, 2)
+        assert.equal(verifiers.length, 3) // default + dummy + dummy2
     })
 
     it("should throw error when verifier isn't added by the owner", async function () {

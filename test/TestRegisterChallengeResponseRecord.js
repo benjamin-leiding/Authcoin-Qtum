@@ -5,7 +5,7 @@ var EntityIdentityRecord = artifacts.require("EntityIdentityRecord");
 var ChallengeRecord = artifacts.require("ChallengeRecord");
 var ValidationAuthenticationEntry = artifacts.require("ValidationAuthenticationEntry");
 
-contract('AuthCoin & ChallengeResonseRecord', function (accounts) {
+contract('AuthCoin & ChallengeResponseRecord', function (accounts) {
 
     let authCoin
     let eir1
