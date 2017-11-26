@@ -1,6 +1,6 @@
 const util = require('ethereumjs-util');
 var AuthCoin = artifacts.require("AuthCoin");
-var DummyVerifier = artifacts.require("./test/helpers/DummyVerifier");
+var DummyVerifier = artifacts.require("signatures/DummyVerifier");
 
 contract('AuthCoin', function (accounts) {
 

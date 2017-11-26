@@ -1,6 +1,6 @@
 const util = require('ethereumjs-util');
 var AuthCoin = artifacts.require("AuthCoin");
-var DummyVerifier = artifacts.require("./test/helpers/DummyVerifier");
+var DummyVerifier = artifacts.require("signatures/DummyVerifier");
 var EntityIdentityRecord = artifacts.require("EntityIdentityRecord");
 
 contract('AuthCoin & EIR', function (accounts) {
@@ -12,7 +12,7 @@ contract('AuthCoin & EIR', function (accounts) {
     let id = web3.sha3(content, { encoding: 'hex' })
 
     let contentType = util.bufferToHex(util.setLengthRight("dummy", 32))
-    let hash = web3.fromAscii("hash", 32)
+    let hash = web3.toHex("0x27ecdf018bbc32178ec05108bdc85d634a9b324ff77963208197a6975623e82b")
     let signature = web3.fromAscii("signature", 128)
 
     beforeEach('setup contract for each test', async function () {
@@ -32,8 +32,8 @@ contract('AuthCoin & EIR', function (accounts) {
 
     it("supports adding new EIR values", async function () {
         var events = authCoin.LogNewEir({_from:web3.eth.coinbase},{fromBlock: 0, toBlock: 'latest'});
-        await authCoin.registerEir(content, contentType, identifiers, hash, signature)
 
+        await authCoin.registerEir(content, contentType, identifiers, hash, signature)
         assert.equal(await authCoin.getEirCount(), 1)
 
         let eir = EntityIdentityRecord.at(await authCoin.getEir(id))

@@ -4,7 +4,7 @@ var ECSignatureVerifier = artifacts.require("signatures/ECSignatureVerifier");
 var RsaSignatureVerifier = artifacts.require("signatures/RsaSignatureVerifier");
 var EntityIdentityRecord = artifacts.require("EntityIdentityRecord");
 
-contract('AuthCoin & ChallengeRecord', function (accounts) {
+contract('Revoke EIR', function (accounts) {
 
     let authCoin
 
@@ -12,9 +12,12 @@ contract('AuthCoin & ChallengeRecord', function (accounts) {
     let identifiers = [web3.fromAscii("test@mail.com"), web3.fromAscii("John Doe")]
     let contentRsaPubKey = web3.toHex("0x9ffabf3dd8add28b8b08ee6f868ec0628081f6acf8a340da4e5b4624959f1e61fb5cdccf25e25c582eca14c200e57443933819a81b7b1d35165c9d869fec9135")
     let contentEcPubKey  = web3.toHex("0xfdaa33846e677adac0a66ba60029319698e58623")
-    let idEc = web3.sha3(contentEcPubKey, {encoding: 'hex'})
     let idRsa = web3.sha3(contentRsaPubKey, {encoding: 'hex'})
-    let hash = web3.fromAscii("hash", 32)
+    let idEc = web3.sha3(contentEcPubKey, {encoding: 'hex'})
+
+    let hashRsa = web3.toHex("0x5bc0bb3b94fdbbb640ea016c4ffa3264f068ced4f2b772da55b87e6d999e23f8")
+    let hashEc = web3.toHex("0xa64020da5ed38a6bbbe6f151e6184ee074decbc0949363505f149368444a6096")
+
     let contentTypeRsa = util.bufferToHex(util.setLengthRight("rsa", 32))
     let contentTypeEc = util.bufferToHex(util.setLengthRight("ec", 32))
     let eirSignature = web3.fromAscii("signature", 128)
@@ -25,8 +28,9 @@ contract('AuthCoin & ChallengeRecord', function (accounts) {
         let rsaSignatureVerifier = await RsaSignatureVerifier.new(accounts[0])
         await authCoin.registerSignatureVerifier(ecSignatureVerifier.address, contentTypeEc)
         await authCoin.registerSignatureVerifier(rsaSignatureVerifier.address, contentTypeRsa)
-        await authCoin.registerEir(contentRsaPubKey, contentTypeRsa, identifiers, hash, eirSignature)
-        await authCoin.registerEir(contentEcPubKey, contentTypeEc, identifiers, hash, eirSignature)
+        await authCoin.registerEir(contentRsaPubKey, contentTypeRsa, identifiers, hashRsa, eirSignature)
+        await authCoin.registerEir(contentEcPubKey, contentTypeEc, identifiers, hashEc, eirSignature)
+        authCoin.allEvents();
     })
 
     it("should not revoke EIR with RSA content type and invalid revocation signature", async function () {

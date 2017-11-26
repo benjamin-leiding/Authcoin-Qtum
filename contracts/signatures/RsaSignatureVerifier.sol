@@ -10,9 +10,13 @@ contract RsaSignatureVerifier is SignatureVerifier {
     using ModexpPrecompile for *;
     using BytesUtils for *;
 
-    function verify(bytes message, bytes signature, bytes signer) public view returns (bool) {
+    function verify(bytes32 messageHash, bytes signature, bytes signer) public view returns (bool) {
         var (modexpSuccess, modexpOutput) = ModexpPrecompile.modexp(signature, 65537, signer);
-        return modexpSuccess == true && keccak256(modexpOutput) == keccak256(message);
+        return modexpSuccess == true && keccak256(modexpOutput) == messageHash;
+    }
+
+    function verify(bytes message, bytes signature, bytes signer) public view returns (bool) {
+        return verify(keccak256(message), signature, signer);
     }
 
     function verifyDirectKeySignature(bytes signature, bytes signer) public view returns (bool) {

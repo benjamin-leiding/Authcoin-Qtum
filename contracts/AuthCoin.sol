@@ -52,6 +52,8 @@ contract AuthCoin is Ownable {
 
     event LogNewSignatureVerifier(SignatureVerifier a, bytes32 eirType);
 
+    event Print(bytes32 b);
+
     function AuthCoin() {
     }
 
@@ -67,13 +69,14 @@ contract AuthCoin is Ownable {
     {
 
         // ensure content type exists
-        require(signatureVerifiers[_contentType] != address(0));
+        SignatureVerifier signatureVerifier = signatureVerifiers[_contentType];
+        require(signatureVerifier != address(0));
 
         // ensure EIR hash is correct
-        // TODO implement
+        require(keccak256(_content, _contentType, _identifiers) == _hash);
 
         // ensure signature is correct
-        // TODO implement
+        require(signatureVerifier.verify(_hash, _signature, _content));
 
         // calculate id and ensure it doesn't exist
         var id = keccak256(_content);

@@ -1,11 +1,11 @@
 const util = require('ethereumjs-util');
 var AuthCoin = artifacts.require("AuthCoin");
-var DummyVerifier = artifacts.require("./test/helpers/DummyVerifier");
+var DummyVerifier = artifacts.require("signatures/DummyVerifier");
 var EntityIdentityRecord = artifacts.require("EntityIdentityRecord");
 var ChallengeRecord = artifacts.require("ChallengeRecord");
 var ValidationAuthenticationEntry = artifacts.require("ValidationAuthenticationEntry");
 
-contract('AuthCoin & ChallengeResonseRecord', function (accounts) {
+contract('AuthCoin & ChallengeResponseRecord', function (accounts) {
 
     let authCoin
     let eir1
@@ -31,7 +31,10 @@ contract('AuthCoin & ChallengeResonseRecord', function (accounts) {
     let challengeType = web3.fromAscii("signing challenge")
     let challenge = web3.fromAscii("sign value 'HELLO'", 128)
 
-    let hash = web3.fromAscii("hash", 32)
+    let hashContent = web3.toHex("0x27ecdf018bbc32178ec05108bdc85d634a9b324ff77963208197a6975623e82b")
+    let hashContent2 = web3.toHex("0x567c642db189fc0864c49bb42c11402289e9e62105004703d034434228bc0c08")
+    let hashCallengeRecord = web3.toHex("0x567c642db189fc0864c49bb42c11402289e9e62105004703d034434228bc0c08")
+
     let signature = web3.fromAscii("signature", 128)
 
     beforeEach('setup contract for each test', async function () {
@@ -39,23 +42,23 @@ contract('AuthCoin & ChallengeResonseRecord', function (accounts) {
         let dummyVerifier = await DummyVerifier.new(accounts[0])
         await authCoin.registerSignatureVerifier(dummyVerifier.address, contentType)
 
-        await authCoin.registerEir(content, contentType, identifiers, hash, signature)
-        await authCoin.registerEir(content2, contentType, identifiers, hash, signature)
+        await authCoin.registerEir(content, contentType, identifiers, hashContent, signature)
+        await authCoin.registerEir(content2, contentType, identifiers, hashContent2, signature)
 
         eir1 = EntityIdentityRecord.at(await authCoin.getEir(id))
         eir2 = EntityIdentityRecord.at(await authCoin.getEir(id2))
         verifierEirId = await eir1.getId()
         targetEirId = await eir2.getId()
 
-        await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, verifierEirId, targetEirId, hash, signature)
-        await authCoin.registerChallengeRecord(challengeId2, vaeId, challengeType, challenge, targetEirId, verifierEirId, hash, signature)
+        await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, verifierEirId, targetEirId, hashCallengeRecord, signature)
+        await authCoin.registerChallengeRecord(challengeId2, vaeId, challengeType, challenge, targetEirId, verifierEirId, hashCallengeRecord, signature)
 
     })
 
     it("supports adding new challenge response record", async function () {
         var rrEvents = authCoin.LogNewChallengeResponseRecord({_from: web3.eth.coinbase}, {fromBlock: 0, toBlock: 'latest'});
 
-        await authCoin.registerChallengeResponse(vaeId, challengeId, web3.fromAscii("content", 128) , hash, signature)
+        await authCoin.registerChallengeResponse(vaeId, challengeId, web3.fromAscii("content", 128) , hashCallengeRecord, signature)
         assert.equal(await authCoin.getVaeCount(), 1)
 
         let vae = ValidationAuthenticationEntry.at(await authCoin.getVae(vaeId))
@@ -71,7 +74,7 @@ contract('AuthCoin & ChallengeResonseRecord', function (accounts) {
     it("should fail when challenge response record is added with unknown VAE id", async function () {
         let success = false
         try {
-            await authCoin.registerChallengeResonseRecord(challengeId, util.bufferToHex(util.setLengthRight("unknown", 32)), challengeType, challenge, verifierEirId, web3.fromAscii("dummy", 32), hash, signature)
+            await authCoin.registerChallengeResonseRecord(challengeId, util.bufferToHex(util.setLengthRight("unknown", 32)), challengeType, challenge, verifierEirId, web3.fromAscii("dummy", 32), hashCallengeRecord, signature)
             success = true
         } catch (error) {}
         assert.isNotOk(success)
