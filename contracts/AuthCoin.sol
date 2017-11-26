@@ -7,8 +7,6 @@ import "./ChallengeRecord.sol";
 import "./ChallengeResponseRecord.sol";
 import "./ValidationAuthenticationEntry.sol";
 import "./signatures/SignatureVerifier.sol";
-import "./signatures/DummyVerifier.sol";
-
 
 /**
 * @title AuthCoin
@@ -55,7 +53,6 @@ contract AuthCoin is Ownable {
     event LogNewSignatureVerifier(SignatureVerifier a, bytes32 eirType);
 
     function AuthCoin() {
-        registerSignatureVerifier(new DummyVerifier(), bytes32("test"));
     }
 
     /**
@@ -110,7 +107,6 @@ contract AuthCoin is Ownable {
             LogRevokedEir(eir.getId());
             return true;
         }
-
         return false;
     }
 
@@ -222,8 +218,8 @@ contract AuthCoin is Ownable {
     * contract can add new signature verifiers.
     *
     * @param signatureVerifier signature verifier address
-    * @param eirType EIR type the signature verifier is implemented
-    * @return true if signature verifier registration is successful.
+    * @param eirType EIR type the signature verifier is implemented for
+    * @return true if signature verifier registration is successful
     */
     function registerSignatureVerifier(SignatureVerifier signatureVerifier, bytes32 eirType) onlyOwner public returns (bool) {
         if (address(signatureVerifiers[eirType]) == address(0)) {

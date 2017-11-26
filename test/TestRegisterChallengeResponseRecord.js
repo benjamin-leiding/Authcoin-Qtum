@@ -1,6 +1,6 @@
 const util = require('ethereumjs-util');
 var AuthCoin = artifacts.require("AuthCoin");
-var DummyVerifier = artifacts.require("signatures/DummyVerifier");
+var DummyVerifier = artifacts.require("./test/helpers/DummyVerifier");
 var EntityIdentityRecord = artifacts.require("EntityIdentityRecord");
 var ChallengeRecord = artifacts.require("ChallengeRecord");
 var ValidationAuthenticationEntry = artifacts.require("ValidationAuthenticationEntry");

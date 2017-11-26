@@ -1,6 +1,6 @@
 const util = require('ethereumjs-util');
 var AuthCoin = artifacts.require("AuthCoin");
-var DummyVerifier = artifacts.require("signatures/DummyVerifier");
+var DummyVerifier = artifacts.require("./test/helpers/DummyVerifier");
 
 contract('AuthCoin', function (accounts) {
 
@@ -36,7 +36,7 @@ contract('AuthCoin', function (accounts) {
         assert.equal(verifier, '0x0000000000000000000000000000000000000000')
     })
 
-    it("should return all verifier types know to AutCoin contract", async function () {
+    it("should return all verifier types known to AutCoin contract", async function () {
         let dummyVerifier = await DummyVerifier.new(accounts[0])
         await authCoin.registerSignatureVerifier(dummyVerifier.address, eirType)
         await authCoin.registerSignatureVerifier(dummyVerifier.address, eirType)
