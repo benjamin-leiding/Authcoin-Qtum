@@ -3,11 +3,12 @@ pragma solidity ^0.4.17;
 
 import "./ChallengeRecord.sol";
 import "./ChallengeResponseRecord.sol";
+import "./ChallengeSignatureRecord.sol";
 import "./EntityIdentityRecord.sol";
 
 
 /*
-* @dev Tracks and stores the information produced by the validation & authentication process. During the V&A process,
+* @dev Tracks and stores the information produced by single validation & authentication process. During the V&A process,
 * the verifier and target:
 *   1. exchange challenges (CR - ChallengeRecord) with each other and
 *   2. create the corresponding responses (RR - ResponseRecord) and
@@ -34,6 +35,12 @@ contract ValidationAuthenticationEntry {
 
     // cr_id array
     bytes32[] private responseIdArray;
+
+    // cr_id => ChallengeSignatureRecord
+    mapping(bytes32 => ChallengeSignatureRecord) private signatures;
+
+    // cr_id array
+    bytes32[] private signatureIdArray;
 
     address private creator;
 
@@ -97,12 +104,36 @@ contract ValidationAuthenticationEntry {
         return true;
     }
 
+    function addChallengeSignatureRecord(ChallengeSignatureRecord _sr) onlyCreator public returns (bool) {
+        require(address(_sr) != address(0));
+        require(challengeIdArray.length == 2); // ok
+        require(responseIdArray.length == 2); // ok
+        require(signatureIdArray.length < 2);
+
+        // challenge exists
+        require(address(challenges[_sr.getChallengeRecordId()]) != address(0));
+        // challenge response exist
+        require(address(responses[_sr.getChallengeRecordId()]) != address(0));
+        // challenge response doesn't exist
+        require(address(signatures[_sr.getChallengeRecordId()]) == address(0));
+
+        // TODO sr is signed by correct EIR
+
+        signatures[_sr.getChallengeRecordId()] = _sr;
+        signatureIdArray.push(_sr.getChallengeRecordId());
+        return true;
+    }
+
     function getChallengesCount() public view returns(uint) {
         return challengeIdArray.length;
     }
 
     function getChallengeResponseCount() public view returns(uint) {
         return responseIdArray.length;
+    }
+
+    function getChallengeSignatureCount() public view returns(uint) {
+        return signatureIdArray.length;
     }
 
     // Returns the status of current V&A process. Returns one of the following values:

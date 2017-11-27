@@ -18,7 +18,7 @@ contract ChallengeSignatureRecord {
 
     bool private successful;
 
-    bytes32[] private hash;
+    bytes32 private hash;
 
     bytes private signature;
 
@@ -29,7 +29,7 @@ contract ChallengeSignatureRecord {
         bytes32 _challengeRecordId,
         uint _expirationBlock,
         bool _successful,
-        bytes32[] _hash,
+        bytes32 _hash,
         bytes _signature,
         address _authCoinAddress) {
         vaeId = _vaeId;
