@@ -9,7 +9,7 @@
     "deploy": "truffle deploy",
     "postinstall": "truffle install",
     "console": "truffle console",
-    "testrpc": "testrpc --gasLimit 11000000",
+    "testrpc": "testrpc --gasLimit 60000000",
     "testrpc:coverage": "node_modules/.bin/testrpc-sc --port 8555",
     "truffle-test": "truffle test",
     "test": "run-p --aggregate-output --race testrpc truffle-test",
