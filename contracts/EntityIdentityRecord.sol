@@ -11,7 +11,7 @@ contract EntityIdentityRecord {
 
     bytes32 private id;
 
-    uint private blocNumber;
+    uint private blockNumber;
 
     bytes private content;
 
@@ -36,7 +36,7 @@ contract EntityIdentityRecord {
         bytes _signature,
         address _creator) {
         id = keccak256(_content);
-        blocNumber = block.number;
+        blockNumber = block.number;
         content = _content;
         contentType = _contentType;
         revoked = false;
@@ -50,8 +50,8 @@ contract EntityIdentityRecord {
         return id;
     }
 
-    function getBlocNumber() public view returns (uint) {
-        return blocNumber;
+    function getBlockNumber() public view returns (uint) {
+        return blockNumber;
     }
 
     function getContent() public view returns (bytes) {
@@ -80,6 +80,27 @@ contract EntityIdentityRecord {
 
     function getCreator() public view returns (address) {
         return creator;
+    }
+
+    function getData() public view returns(
+        bytes32,
+        uint,
+        bytes,
+        bytes32,
+        bool,
+        bytes32[],
+        bytes32,
+        bytes) {
+        return (
+            id,
+            blockNumber,
+            content,
+            contentType,
+            revoked,
+            identifiers,
+            hash,
+            signature
+        );
     }
 
     // TODO getHash
