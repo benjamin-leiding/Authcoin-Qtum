@@ -65,6 +65,20 @@ library BytesUtils {
         return string(s);
     }
 
+    function bytes32ToString(bytes32 b32) pure internal returns (string) {
+        bytes memory s = new bytes(64);
+
+        for (var i = 0; i < 32; i++) {
+            byte b = byte(b32[i]);
+            byte hi = byte(uint8(b) / 16);
+            byte lo = byte(uint8(b) - 16 * uint8(hi));
+            s[i*2] = char(hi);
+            s[i*2+1] = char(lo);
+        }
+
+        return string(s);
+    }
+
 	function bytesToAddress(bytes _address) pure internal returns (address) {
 		uint160 m = 0;
 		uint160 b = 0;

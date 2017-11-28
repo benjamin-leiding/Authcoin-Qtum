@@ -7,6 +7,7 @@ import "./ChallengeRecord.sol";
 import "./ChallengeResponseRecord.sol";
 import "./ValidationAuthenticationEntry.sol";
 import "./signatures/SignatureVerifier.sol";
+import "./utils/BytesUtils.sol";
 
 /**
 * @title AuthCoin
@@ -52,8 +53,6 @@ contract AuthCoin is Ownable {
 
     event LogNewSignatureVerifier(SignatureVerifier a, bytes32 eirType);
 
-    event Print(bytes32 b);
-
     function AuthCoin() {
     }
 
@@ -76,7 +75,7 @@ contract AuthCoin is Ownable {
         require(keccak256(_content, _contentType, _identifiers) == _hash);
 
         // ensure signature is correct
-        require(signatureVerifier.verify(_hash, _signature, _content));
+        require(signatureVerifier.verify(BytesUtils.bytes32ToString(_hash), _signature, _content));
 
         // calculate id and ensure it doesn't exist
         var id = keccak256(_content);

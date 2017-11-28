@@ -14,6 +14,10 @@ contract DummyVerifier is SignatureVerifier {
         return true;
     }
 
+    function verify(string message, bytes signature, bytes signer) public view returns (bool) {
+        return true;
+    }
+
     function verifyDirectKeySignature(bytes signature, bytes signer) public view returns (bool) {
         return true;
     }

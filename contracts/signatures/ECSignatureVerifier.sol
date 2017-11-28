@@ -38,12 +38,15 @@ contract ECSignatureVerifier is SignatureVerifier {
     }
 
     function verify(bytes message, bytes signature, bytes signer) public view returns (bool) {
-        bytes32 messageHash = keccak256(BytesUtils.bytesToString(message));
-        return verify(messageHash, signature, signer);
+        return verify(keccak256(message), signature, signer);
+    }
+
+    function verify(string message, bytes signature, bytes signer) public view returns (bool) {
+        return verify(keccak256(message), signature, signer);
     }
 
     function verifyDirectKeySignature(bytes signature, bytes signer) public view returns (bool) {
-        return verify(signer, signature, signer);
+        return verify(keccak256(BytesUtils.bytesToString(signer)), signature, signer);
     }
 
 }
