@@ -5,6 +5,7 @@ import "zeppelin/ownership/Ownable.sol";
 import "./EntityIdentityRecord.sol";
 import "./ChallengeRecord.sol";
 import "./ChallengeResponseRecord.sol";
+import "./ChallengeSignatureRecord.sol";
 import "./ValidationAuthenticationEntry.sol";
 import "./signatures/SignatureVerifier.sol";
 import "./signatures/DummyVerifier.sol";
@@ -49,6 +50,8 @@ contract AuthCoin is Ownable {
     event LogNewChallengeRecord(ChallengeRecord cr, bytes32 challengeType, bytes32 id, bytes32 vaeId);
 
     event LogNewChallengeResponseRecord(ChallengeResponseRecord responseAddress, bytes32 challengeId);
+
+    event LogNewChallengeSignatureRecord(ChallengeSignatureRecord sr, bytes32 challengeId, bytes32 vaeId);
 
     event LogNewVae(address vaeAddress, bytes32 id);
 
@@ -200,19 +203,32 @@ contract AuthCoin is Ownable {
         return true;
     }
 
-    // Registers a challenge response signature record.
-    function registerSignatureRecord(
+    /**
+    * @dev Registers a challenge response signature record.
+    */
+    function registerChallengeSignature(
         bytes32 _vaeId,
         bytes32 _challengeId,
         uint _expirationBlock,
         bool _successful,
-        bytes32[] _hash,
+        bytes32 _hash,
         bytes _signature) public returns (bool)
     {
         // check vae id. vae must exist and should be in correct status.
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
         require(address(vae) != address(0));
-        //TODO implement
+
+        ChallengeSignatureRecord sr = new ChallengeSignatureRecord(
+            _vaeId,
+            _challengeId,
+            _expirationBlock,
+            _successful,
+            _hash,
+            _signature,
+            owner
+        );
+        require(vae.addChallengeSignatureRecord(sr));
+        LogNewChallengeSignatureRecord(sr, _challengeId, _vaeId);
         return true;
     }
 

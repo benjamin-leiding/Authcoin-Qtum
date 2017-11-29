@@ -9,7 +9,7 @@
     "deploy": "truffle deploy",
     "postinstall": "truffle install",
     "console": "truffle console",
-    "testrpc": "testrpc --gasLimit 11000000",
+    "testrpc": "testrpc --gasLimit 60000000",
     "testrpc:coverage": "node_modules/.bin/testrpc-sc --port 8555",
     "truffle-test": "truffle test",
     "test": "run-p --aggregate-output --race testrpc truffle-test",
@@ -23,7 +23,8 @@
     "npm-run-all": "^4.1.1",
     "solidity-coverage": "^0.2.7",
     "solium": "^0.5.5",
-    "truffle": "^v4.0.0-beta.2"
+    "truffle": "^v4.0.1",
+    "ethereumjs-util": "^5.1.2"
   },
   "dependencies": {
     "chai": "^4.1.2"
