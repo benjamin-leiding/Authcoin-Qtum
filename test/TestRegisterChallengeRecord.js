@@ -26,20 +26,22 @@ contract('AuthCoin & ChallengeRecord', function (accounts) {
 
     let challengeType = web3.fromAscii("signing challenge")
     let challenge = web3.fromAscii("sign value 'HELLO'", 128)
+    let challengeHash = web3.toHex("0x342f63fcce85352bb0cdacb05dcc17bcab0c0586289dd799678b210623d9f7ce")
+    let challengeSignature = web3.toHex("0x533bb96df50b7ae3013f552a763216aa99d4fb432a98c0f951752a431031cf7c8c5959ebd9d3f54beb9f35e60029b9c4157cf067cece3f1b49977c77576e3327", 128)
+
     let verifierEirId
     let targetEirId
-    let hashContent = web3.toHex("0x27ecdf018bbc32178ec05108bdc85d634a9b324ff77963208197a6975623e82b")
-    let hashContent2 = web3.toHex("0x567c642db189fc0864c49bb42c11402289e9e62105004703d034434228bc0c08")
+    let hashContent = web3.toHex("0xa1e945cea940a4b22e4d188cb5a5ec5d4dbdb02e07e29976a1230a80c1eccd43")
+    let hashContent2 = web3.toHex("0xbb7f3dd4cf198d5b2c1bcc21987c134098732a200a411d5041d0f4b75c292561")
+
     let signature = web3.fromAscii("signature", 128)
 
     beforeEach('setup contract for each test', async function () {
         authCoin = await AuthCoin.new(accounts[0])
         let dummyVerifier = await DummyVerifier.new(accounts[0])
         await authCoin.registerSignatureVerifier(dummyVerifier.address, contentType)
-
         await authCoin.registerEir(content, contentType, identifiers, hashContent, signature)
         await authCoin.registerEir(content2, contentType, identifiers, hashContent2, signature)
-
         eir1 = EntityIdentityRecord.at(await authCoin.getEir(id))
         eir2 = EntityIdentityRecord.at(await authCoin.getEir(id2))
         verifierEirId = await eir1.getId()
@@ -67,8 +69,8 @@ contract('AuthCoin & ChallengeRecord', function (accounts) {
 
     it("supports adding new challenge record", async function () {
         var vaeEvents = authCoin.LogNewVae({_from: web3.eth.coinbase}, {fromBlock: 0, toBlock: 'latest'});
-        await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, verifierEirId, targetEirId, hashContent, signature)
 
+        await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, verifierEirId, targetEirId, challengeHash, signature)
         assert.equal(await authCoin.getVaeCount(), 1)
 
         let vae = ValidationAuthenticationEntry.at(await authCoin.getVae(vaeId))

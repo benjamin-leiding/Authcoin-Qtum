@@ -1,6 +1,10 @@
 pragma solidity ^0.4.17;
 
 
+import "./signatures/SignatureVerifier.sol";
+import "./utils/BytesUtils.sol";
+
+
 /**
 * @dev Entity Identity Record (EIR) contains information that links an entity to a certain
 * identity and the corresponding public key or certificate. EIR is created during the key
@@ -11,22 +15,35 @@ contract EntityIdentityRecord {
 
     bytes32 private id;
 
-    uint private blocNumber;
+    bytes32 private contentType;
 
     bytes private content;
 
-    bytes32 private contentType;
+    bytes32[] private identifiers;
 
     bool private revoked;
 
-    bytes32[] private identifiers;
-
-    bytes32 private hash;
+    uint private blocNumber;
 
     bytes private signature;
 
-    // creator of the contract.
-    address private creator;
+    SignatureVerifier private signatureVerifier;
+
+    address private contractCreator;
+
+    address private contractOwner;
+
+    modifier onlyContractOwner() {
+        if (msg.sender == contractOwner)
+        _;
+    }
+
+    modifier onlyContractCreator() {
+        if (msg.sender == contractCreator)
+        _;
+    }
+
+    event LogRevokedEir(bytes32 indexed id);
 
     function EntityIdentityRecord(
         bytes32[] _identifiers,
@@ -34,16 +51,25 @@ contract EntityIdentityRecord {
         bytes32 _contentType,
         bytes32 _hash,
         bytes _signature,
-        address _creator) {
+        SignatureVerifier _signatureVerifier,
+        address _contractCreator,
+        address _contractOwner) {
         id = keccak256(_content);
         blocNumber = block.number;
         content = _content;
         contentType = _contentType;
         revoked = false;
         identifiers = _identifiers;
-        hash = _hash;
         signature = _signature;
-        creator = _creator;
+        signatureVerifier = _signatureVerifier;
+        contractCreator = _contractCreator;
+        contractOwner = _contractOwner;
+
+        // ensure EIR hash is correct
+        require(getHash() == _hash);
+
+        // ensure signature is correct
+        require(signatureVerifier.verify(BytesUtils.bytes32ToString(_hash), _signature, _content));
     }
 
     function getId() public view returns (bytes32) {
@@ -79,14 +105,26 @@ contract EntityIdentityRecord {
     }
 
     function getCreator() public view returns (address) {
-        return creator;
+        return contractCreator;
     }
 
-    // TODO getHash
-    // TODO getSignature
+    function getHash() public view returns (bytes32) {
+        return keccak256(id, contentType, content, identifiers, revoked);
+    }
 
-    function revoke() public {// TODO unsafe operation
-        revoked = true;
+    function getSignature() public view returns (bytes) {
+        return signature;
+    }
+
+    // TODO: fix tests when adding onlyContractOwner modifier
+    function revoke(bytes revokingSignature) public returns(bool) {
+        if(signatureVerifier.verify(BytesUtils.bytes32ToString(keccak256(id, contentType, content, identifiers, true)), revokingSignature, content)) {
+            revoked = true;
+            LogRevokedEir(id);
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

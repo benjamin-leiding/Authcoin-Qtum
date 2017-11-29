@@ -43,8 +43,6 @@ contract AuthCoin is Ownable {
 
     event LogNewEir(bytes32 id, EntityIdentityRecord eir, bytes32 contentType);
 
-    event LogRevokedEir(bytes32 id);
-
     event LogNewChallengeRecord(ChallengeRecord cr, bytes32 challengeType, bytes32 id, bytes32 vaeId);
 
     event LogNewChallengeResponseRecord(ChallengeResponseRecord responseAddress, bytes32 challengeId);
@@ -71,16 +69,6 @@ contract AuthCoin is Ownable {
         SignatureVerifier signatureVerifier = signatureVerifiers[_contentType];
         require(signatureVerifier != address(0));
 
-        // ensure EIR hash is correct
-        require(keccak256(_content, _contentType, _identifiers) == _hash);
-
-        // ensure signature is correct
-        require(signatureVerifier.verify(BytesUtils.bytes32ToString(_hash), _signature, _content));
-
-        // calculate id and ensure it doesn't exist
-        var id = keccak256(_content);
-        require(eirIdToEir[id] == address(0));
-
         // create new contract and store it
         EntityIdentityRecord eir = new EntityIdentityRecord(
             _identifiers,
@@ -88,8 +76,14 @@ contract AuthCoin is Ownable {
             _contentType,
             _hash,
             _signature,
+            signatureVerifier,
+            msg.sender,
             owner
         );
+
+        // ensure it doesn't exist
+        bytes32 id = eir.getId();
+        require(eirIdToEir[id] == address(0));
 
         eirIdToEir[id] = eir;
         eirIdList.push(id);
@@ -98,18 +92,10 @@ contract AuthCoin is Ownable {
         return true;
     }
 
-    function revokeEir(bytes signature, bytes signer) public returns (bool) {
-        EntityIdentityRecord eir = eirIdToEir[keccak256(signer)];
+    function revokeEir(bytes32 eirId, bytes revokingSignature) public {
+        EntityIdentityRecord eir = eirIdToEir[eirId];
         require(address(eir) != address(0));
-        SignatureVerifier signatureVerifier = signatureVerifiers[eir.getContentType()];
-        require(address(signatureVerifier) != address(0));
-
-        if (signatureVerifier.verifyDirectKeySignature(signature, signer)) {
-            eir.revoke();
-            LogRevokedEir(eir.getId());
-            return true;
-        }
-        return false;
+        eir.revoke(revokingSignature);
     }
 
     /**
@@ -126,19 +112,9 @@ contract AuthCoin is Ownable {
         bytes _signature) public returns (bool)
     {
 
-        // ensure CR hash is correct
-        // TODO implement
-
-        // ensure CR signature is correct
-        // TODO implement
-
-        // verifier exists
-        EntityIdentityRecord verifier = getEir(_verifierEir);
-        require(address(verifier) != address(0));
-
-        // target exists
-        EntityIdentityRecord target = getEir(_targetEir);
-        require(address(target) != address(0));
+        EntityIdentityRecord verifier;
+        EntityIdentityRecord target;
+        (verifier, target) = validateChallengeRecord(_id, _vaeId, _challengeType, _challenge, _verifierEir, _targetEir, _hash, _signature);
 
         // check VAE
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
@@ -173,6 +149,49 @@ contract AuthCoin is Ownable {
         return true;
     }
 
+    function validateChallengeRecordHash(
+    bytes32 _id,
+    bytes32 _vaeId,
+    bytes32 _challengeType,
+    bytes _challenge,
+    bytes32 _verifierEir,
+    bytes32 _targetEir) public returns (bytes32)
+    {
+        return keccak256(_id, _vaeId, _challengeType, _challenge, _verifierEir, _targetEir);
+    }
+
+    function validateChallengeRecord(
+        bytes32 _id,
+        bytes32 _vaeId,
+        bytes32 _challengeType,
+        bytes _challenge,
+        bytes32 _verifierEir,
+        bytes32 _targetEir,
+        bytes32 _hash,
+        bytes _signature) private returns (EntityIdentityRecord, EntityIdentityRecord)
+    {
+        // verifier exists
+        EntityIdentityRecord verifier = getEir(_verifierEir);
+        require(address(verifier) != address(0));
+
+        // ensure CR hash is correct
+        //require(keccak256(_id, _vaeId, _challengeType, _challenge, _verifierEir, _targetEir) == _hash);
+
+        // signature verifier exists
+        SignatureVerifier signatureVerifier = signatureVerifiers[verifier.getContentType()];
+        //require(signatureVerifier != address(0));
+
+        // ensure CR signature is correct
+        //bytes memory publicKey = verifier.getContent();
+        //require(signatureVerifier.verify(BytesUtils.bytes32ToString(_hash), _signature, publicKey));
+
+        // target exists
+        EntityIdentityRecord target = getEir(_targetEir);
+        require(address(target) != address(0));
+
+        return (verifier, target);
+    }
+
     /**
     * @dev Registers a challenge response record.
     */
@@ -198,7 +217,9 @@ contract AuthCoin is Ownable {
         return true;
     }
 
-    // Registers a challenge response signature record.
+    /**
+    * @dev Registers a challenge response signature record.
+    */
     function registerSignatureRecord(
         bytes32 _vaeId,
         bytes32 _challengeId,

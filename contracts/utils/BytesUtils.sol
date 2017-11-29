@@ -68,7 +68,7 @@ library BytesUtils {
     function bytes32ToString(bytes32 b32) pure internal returns (string) {
         bytes memory s = new bytes(64);
 
-        for (var i = 0; i < 32; i++) {
+        for (uint8 i = 0; i < 32; i++) {
             byte b = byte(b32[i]);
             byte hi = byte(uint8(b) / 16);
             byte lo = byte(uint8(b) - 16 * uint8(hi));
