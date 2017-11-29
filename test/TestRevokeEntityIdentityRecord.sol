@@ -9,8 +9,6 @@ import "../contracts/EntityIdentityRecord.sol";
 import "../contracts/signatures/RsaSignatureVerifier.sol";
 import "../contracts/signatures/ECSignatureVerifier.sol";
 
-import "./helpers/ErrorProxy.sol";
-
 contract TestRevokeEntityIdentityRecord {
 
     function testRevokeEntityIdentityRecordByRSAPublicKey() public {

@@ -63,6 +63,10 @@ contract ChallengeSignatureRecord {
         return successful;
     }
 
+    function isRevoked() public view returns (bool) {
+        return revoked;
+    }
+
     // TODO getHash()
     // TODO getSignature
 

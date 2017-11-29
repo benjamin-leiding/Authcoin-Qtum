@@ -79,4 +79,26 @@ contract('AuthCoin & ChallengeRecord', function (accounts) {
         assert.equal(event[0].args.id, vaeId)
     })
 
+    it("querying VAE array by EIR id", async function () {
+        var vaeEvents = authCoin.LogNewVae({_from: web3.eth.coinbase}, {fromBlock: 0, toBlock: 'latest'});
+        await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, verifierEirId, targetEirId, hash, signature)
+
+        assert.equal(await authCoin.getVaeCount(), 1)
+
+        let vaeArray = await authCoin.getVaeArrayByEirId(verifierEirId);
+        assert.equal(vaeArray.length, 1)
+
+        let vaeArray2 = await authCoin.getVaeArrayByEirId(targetEirId);
+        assert.equal(vaeArray2.length, 1)
+        assert.equal(vaeArray[0], vaeArray2[0])
+
+        var event = vaeEvents.get()
+        assert.equal(event[0].args.vaeAddress, vaeArray[0])
+    })
+
+    it("querying VAE array by EIR that doesn't have any challenges return empty array", async function () {
+        let vaeArray = await authCoin.getVaeArrayByEirId(verifierEirId);
+        assert.equal(vaeArray.length, 0)
+    })
+
 })
