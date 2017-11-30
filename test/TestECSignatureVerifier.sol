@@ -5,7 +5,7 @@ import "../contracts/signatures/ECSignatureVerifier.sol";
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 
-contract TestECSignatureVerification {
+contract TestECSignatureVerifier {
 
     ECSignatureVerifier ecSignatureVerifier;
 

@@ -69,6 +69,12 @@ contract AuthCoin is Ownable {
         SignatureVerifier signatureVerifier = signatureVerifiers[_contentType];
         require(signatureVerifier != address(0));
 
+        // ensure EIR hash is correct
+        require(keccak256(keccak256(_content), _contentType, _content, _identifiers, false) == _hash);
+
+        // ensure signature is correct
+        require(signatureVerifier.verify(BytesUtils.bytes32ToString(_hash), _signature, _content));
+
         // create new contract and store it
         EntityIdentityRecord eir = new EntityIdentityRecord(
             _identifiers,
@@ -77,8 +83,7 @@ contract AuthCoin is Ownable {
             _hash,
             _signature,
             signatureVerifier,
-            msg.sender,
-            owner
+            msg.sender
         );
 
         // ensure it doesn't exist
@@ -111,21 +116,25 @@ contract AuthCoin is Ownable {
         bytes32 _hash,
         bytes _signature) public returns (bool)
     {
-
-        EntityIdentityRecord verifier;
-        EntityIdentityRecord target;
-        (verifier, target) = validateChallengeRecord(_id, _vaeId, _challengeType, _challenge, _verifierEir, _targetEir, _hash, _signature);
-
         // check VAE
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
-        var isInitialized = (address(vae)!=address(0));
+        var isInitialized = (address(vae) != address(0));
 
-        if (!isInitialized) {
-            vae = new ValidationAuthenticationEntry(_vaeId, owner);
-            vaeIdToVae[_vaeId] = vae;
-            vaeIdList.push(_vaeId);
-            LogNewVae(vae, _vaeId);
-        }
+        // verifier exists
+        EntityIdentityRecord verifier = getEir(_verifierEir);
+        require(address(verifier) != address(0));
+        //require(owner == verifier.getCreator());
+
+        // target exists
+        EntityIdentityRecord target = getEir(_targetEir);
+        require(address(target) != address(0));
+        //require(owner == target.getCreator());
+
+        // ensure EIR hash is correct
+        require(keccak256(_id, _vaeId, _challengeType, _challenge, _verifierEir, _targetEir) == _hash);
+
+        // ensure signature is correct
+        require(verifier.verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
 
         ChallengeRecord cr = new ChallengeRecord(
             _id,
@@ -136,8 +145,17 @@ contract AuthCoin is Ownable {
             target,
             _hash,
             _signature,
-            owner
+            msg.sender
         );
+
+        if (!isInitialized) {
+            vae = new ValidationAuthenticationEntry(_vaeId,  msg.sender);
+            vaeIdToVae[_vaeId] = vae;
+            vaeIdList.push(_vaeId);
+            LogNewVae(vae, _vaeId);
+        } else {
+            //require(owner == vae.getCreator());
+        }
         vae.addChallengeRecord(cr);
 
         LogNewChallengeRecord(
@@ -147,49 +165,6 @@ contract AuthCoin is Ownable {
             cr.getVaeId()
         );
         return true;
-    }
-
-    function validateChallengeRecordHash(
-    bytes32 _id,
-    bytes32 _vaeId,
-    bytes32 _challengeType,
-    bytes _challenge,
-    bytes32 _verifierEir,
-    bytes32 _targetEir) public returns (bytes32)
-    {
-        return keccak256(_id, _vaeId, _challengeType, _challenge, _verifierEir, _targetEir);
-    }
-
-    function validateChallengeRecord(
-        bytes32 _id,
-        bytes32 _vaeId,
-        bytes32 _challengeType,
-        bytes _challenge,
-        bytes32 _verifierEir,
-        bytes32 _targetEir,
-        bytes32 _hash,
-        bytes _signature) private returns (EntityIdentityRecord, EntityIdentityRecord)
-    {
-        // verifier exists
-        EntityIdentityRecord verifier = getEir(_verifierEir);
-        require(address(verifier) != address(0));
-
-        // ensure CR hash is correct
-        //require(keccak256(_id, _vaeId, _challengeType, _challenge, _verifierEir, _targetEir) == _hash);
-
-        // signature verifier exists
-        SignatureVerifier signatureVerifier = signatureVerifiers[verifier.getContentType()];
-        //require(signatureVerifier != address(0));
-
-        // ensure CR signature is correct
-        //bytes memory publicKey = verifier.getContent();
-        //require(signatureVerifier.verify(BytesUtils.bytes32ToString(_hash), _signature, publicKey));
-
-        // target exists
-        EntityIdentityRecord target = getEir(_targetEir);
-        require(address(target) != address(0));
-
-        return (verifier, target);
     }
 
     /**
@@ -204,13 +179,22 @@ contract AuthCoin is Ownable {
     {
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
         require(address(vae) != address(0));
+        //require(owner == vae.getCreator());
+
+        // ensure CR hash is correct
+        require(keccak256(_vaeId, _challengeId, _response) == _hash);
+
+        // TODO: implement
+        // ensure CR signature is correct
+        //require(chalengeOwnerEir.verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
+
         ChallengeResponseRecord rr = new ChallengeResponseRecord(
             _vaeId,
             _challengeId,
             _response,
             _hash,
             _signature,
-            owner
+            msg.sender
         );
         require(vae.addChallengeResponseRecord(rr));
         LogNewChallengeResponseRecord(rr, _challengeId);
@@ -231,6 +215,8 @@ contract AuthCoin is Ownable {
         // check vae id. vae must exist and should be in correct status.
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
         require(address(vae) != address(0));
+        //require(owner == vae.getCreator());
+
         //TODO implement
         return true;
     }

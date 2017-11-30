@@ -1,10 +1,13 @@
 pragma solidity ^0.4.17;
 
 
+import "./Identifiable.sol";
+
+
 /**
 * @dev Contains all information regarding a V&A signature
 */
-contract ChallengeSignatureRecord {
+contract ChallengeSignatureRecord is Identifiable {
 
     bytes32 private vaeId;
 
@@ -22,8 +25,6 @@ contract ChallengeSignatureRecord {
 
     bytes private signature;
 
-    address private creator;
-
     function ChallengeSignatureRecord(
         bytes32 _vaeId,
         bytes32 _challengeRecordId,
@@ -31,7 +32,7 @@ contract ChallengeSignatureRecord {
         bool _successful,
         bytes32[] _hash,
         bytes _signature,
-        address _authCoinAddress) {
+        address _owner) {
         vaeId = _vaeId;
         challengeRecordId = _challengeRecordId;
         blockNumber = block.number;
@@ -40,7 +41,7 @@ contract ChallengeSignatureRecord {
         successful = _successful;
         hash = _hash;
         signature = _signature;
-        creator = _authCoinAddress;
+        owner = _owner;
     }
 
     function getVaeId() public view returns (bytes32) {
@@ -65,10 +66,5 @@ contract ChallengeSignatureRecord {
 
     // TODO getHash()
     // TODO getSignature
-
-    function getCreator() public view returns (address) {
-        return creator;
-    }
-
 
 }

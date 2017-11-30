@@ -3,7 +3,7 @@ var AuthCoin = artifacts.require("AuthCoin");
 var DummyVerifier = artifacts.require("signatures/DummyVerifier");
 var EntityIdentityRecord = artifacts.require("EntityIdentityRecord");
 
-contract('AuthCoin & EIR', function (accounts) {
+contract('AuthCoin & EntityIdentityRecord', function (accounts) {
 
     let authCoin
 

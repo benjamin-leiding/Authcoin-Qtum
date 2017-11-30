@@ -6,7 +6,7 @@ import "../contracts/utils/BytesUtils.sol";
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 
-contract TestRsaSignatureVerification {
+contract TestRsaSignatureVerifier {
 
     RsaSignatureVerifier rsaSignatureVerifier;
 

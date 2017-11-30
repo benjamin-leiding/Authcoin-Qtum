@@ -4,6 +4,7 @@ pragma solidity ^0.4.17;
 import "./ChallengeRecord.sol";
 import "./ChallengeResponseRecord.sol";
 import "./EntityIdentityRecord.sol";
+import "./Identifiable.sol";
 
 
 /*
@@ -14,7 +15,7 @@ import "./EntityIdentityRecord.sol";
 *   3. both entities evaluate the received responses and create corresponding signatures (SR - SignatureRecord)
 *      depending on whether they are satisfied with the received response or not.
 */
-contract ValidationAuthenticationEntry {
+contract ValidationAuthenticationEntry is Identifiable {
 
     // Identifier used to track the VAE throughout the hole V&A process.
     bytes32 private vaeId;
@@ -35,15 +36,13 @@ contract ValidationAuthenticationEntry {
     // cr_id array
     bytes32[] private responseIdArray;
 
-    address private creator;
-
     // Constructor to create a new V&A entry.
     function ValidationAuthenticationEntry(
         bytes32 _vaeId,
-        address _authCoinAddress) {
+        address _owner) {
         vaeId = _vaeId;
         blockNumber = block.number;
-        creator = _authCoinAddress;
+        owner = _owner;
     }
 
     function getVaeId() public view returns(bytes32) {
@@ -52,10 +51,6 @@ contract ValidationAuthenticationEntry {
 
     function getBlockNumber() public view returns(uint) {
         return blockNumber;
-    }
-
-    function getCreator() public view returns(address) {
-        return creator;
     }
 
     function addChallengeRecord(ChallengeRecord _cr) onlyCreator public returns (bool) {
@@ -115,12 +110,6 @@ contract ValidationAuthenticationEntry {
     function getStatus() public view returns (uint) {
         // TODO implement
         return 0;
-    }
-
-    modifier onlyCreator() {
-        //TODO should only be called by authCoin contract
-        //require(msg.sender == creator);
-        _;
     }
 
 }

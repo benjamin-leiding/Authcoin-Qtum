@@ -2,12 +2,13 @@ pragma solidity ^0.4.17;
 
 
 import "./EntityIdentityRecord.sol";
+import "./Identifiable.sol";
 
 
 /**
 * @dev Contains all information about the validation & authentication (V&A) challenge record.
 */
-contract ChallengeRecord {
+contract ChallengeRecord is Identifiable {
 
     // challenge request identifier
     bytes32 private id;
@@ -34,8 +35,6 @@ contract ChallengeRecord {
 
     bytes private signature;
 
-    address private owner;
-
     function ChallengeRecord(
         bytes32 _id,
         bytes32 _vaeId,
@@ -45,7 +44,7 @@ contract ChallengeRecord {
         EntityIdentityRecord _targetEir,
         bytes32 _hash,
         bytes _signature,
-        address _authCoinAddress) {
+        address _owner) {
         id = _id;
         vaeId = _vaeId;
         blockNumber = block.number;
@@ -55,7 +54,7 @@ contract ChallengeRecord {
         targetEir = _targetEir;
         hash = _hash;
         signature = _signature;
-        owner = _authCoinAddress;
+        owner = _owner;
     }
 
     function getId() public view returns(bytes32) {
@@ -80,6 +79,14 @@ contract ChallengeRecord {
 
     function getChallengeType() public view returns (bytes32) {
         return challengeType;
+    }
+
+    function getHash() public view returns (bytes32) {
+        return hash;
+    }
+
+    function getSignature() public view returns (bytes) {
+        return signature;
     }
 
 }

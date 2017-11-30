@@ -4,7 +4,7 @@ var ECSignatureVerifier = artifacts.require("signatures/ECSignatureVerifier");
 var RsaSignatureVerifier = artifacts.require("signatures/RsaSignatureVerifier");
 var EntityIdentityRecord = artifacts.require("EntityIdentityRecord");
 
-contract('Revoke EIR', function (accounts) {
+contract('Authcoin & EntityIdentityRecord', function (accounts) {
 
     let authCoin
 

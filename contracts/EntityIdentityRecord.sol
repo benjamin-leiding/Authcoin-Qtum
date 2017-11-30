@@ -1,6 +1,7 @@
 pragma solidity ^0.4.17;
 
 
+import "./Identifiable.sol";
 import "./signatures/SignatureVerifier.sol";
 import "./utils/BytesUtils.sol";
 
@@ -11,7 +12,7 @@ import "./utils/BytesUtils.sol";
 * generation process and posted to the blockchain. 'content' field is used to store public
 * key or certificate and it must be unique.
 */
-contract EntityIdentityRecord {
+contract EntityIdentityRecord is Identifiable {
 
     bytes32 private id;
 
@@ -25,23 +26,11 @@ contract EntityIdentityRecord {
 
     uint private blocNumber;
 
+    bytes32 private hash;
+
     bytes private signature;
 
     SignatureVerifier private signatureVerifier;
-
-    address private contractCreator;
-
-    address private contractOwner;
-
-    modifier onlyContractOwner() {
-        if (msg.sender == contractOwner)
-        _;
-    }
-
-    modifier onlyContractCreator() {
-        if (msg.sender == contractCreator)
-        _;
-    }
 
     event LogRevokedEir(bytes32 indexed id);
 
@@ -52,24 +41,17 @@ contract EntityIdentityRecord {
         bytes32 _hash,
         bytes _signature,
         SignatureVerifier _signatureVerifier,
-        address _contractCreator,
-        address _contractOwner) {
+        address _owner) {
         id = keccak256(_content);
         blocNumber = block.number;
         content = _content;
         contentType = _contentType;
         revoked = false;
         identifiers = _identifiers;
+        hash == _hash;
         signature = _signature;
         signatureVerifier = _signatureVerifier;
-        contractCreator = _contractCreator;
-        contractOwner = _contractOwner;
-
-        // ensure EIR hash is correct
-        require(getHash() == _hash);
-
-        // ensure signature is correct
-        require(signatureVerifier.verify(BytesUtils.bytes32ToString(_hash), _signature, _content));
+        owner = _owner;
     }
 
     function getId() public view returns (bytes32) {
@@ -104,20 +86,16 @@ contract EntityIdentityRecord {
         return identifiers;
     }
 
-    function getCreator() public view returns (address) {
-        return contractCreator;
-    }
-
     function getHash() public view returns (bytes32) {
-        return keccak256(id, contentType, content, identifiers, revoked);
+        return hash;
     }
 
     function getSignature() public view returns (bytes) {
         return signature;
     }
 
-    // TODO: fix tests when adding onlyContractOwner modifier
-    function revoke(bytes revokingSignature) public returns(bool) {
+    // TODO: fix tests when adding onlyCreator modifier
+    function revoke(bytes revokingSignature) onlyCreator public returns(bool) {
         if(signatureVerifier.verify(BytesUtils.bytes32ToString(keccak256(id, contentType, content, identifiers, true)), revokingSignature, content)) {
             revoked = true;
             LogRevokedEir(id);
@@ -125,6 +103,10 @@ contract EntityIdentityRecord {
         } else {
             return false;
         }
+    }
+
+    function verifySignature(string message, bytes signature) public returns(bool) {
+        return signatureVerifier.verify(message, signature, content);
     }
 
 }
