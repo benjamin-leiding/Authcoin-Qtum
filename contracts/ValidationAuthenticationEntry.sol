@@ -124,28 +124,51 @@ contract ValidationAuthenticationEntry {
         return true;
     }
 
+    // TODO rename to getChallengeCount
     function getChallengesCount() public view returns(uint) {
         return challengeIdArray.length;
+    }
+
+    function getChallengeIds() public view returns(bytes32[]) {
+        return challengeIdArray;
+    }
+
+    function getChallenge(bytes32 challengeId) public view returns(ChallengeRecord) {
+        return challenges[challengeId];
+    }
+
+    function isParticipant(bytes32 eirId) public view returns(bool) {
+        for (uint i = 0; i < challengeIdArray.length; i++) {
+            ChallengeRecord cr = challenges[challengeIdArray[i]];
+            if (cr.getVerifier().getId() == eirId || cr.getTarget().getId() == eirId) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function getChallengeResponseCount() public view returns(uint) {
         return responseIdArray.length;
     }
 
+    function getChallengeResponseIds() public view returns(bytes32[]) {
+        return responseIdArray;
+    }
+
+    function getChallengeResponse(bytes32 challengeId) public view returns(ChallengeResponseRecord) {
+        return responses[challengeId];
+    }
+
     function getChallengeSignatureCount() public view returns(uint) {
         return signatureIdArray.length;
     }
 
-    // Returns the status of current V&A process. Returns one of the following values:
-    //    0 - waiting_challenge_record
-    //    1 - waiting_challenge_response_record(s)
-    //    2 - waiting_challenge_signature_record(s)
-    //    3 - failed
-    //    4 - revoked
-    //    5 - successful
-    function getStatus() public view returns (uint) {
-        // TODO implement
-        return 0;
+    function getChallengeSignatureIds() public view returns(bytes32[]) {
+        return signatureIdArray;
+    }
+
+    function getChallengeSignature(bytes32 challengeId) public view returns(ChallengeSignatureRecord) {
+        return signatures[challengeId];
     }
 
     modifier onlyCreator() {

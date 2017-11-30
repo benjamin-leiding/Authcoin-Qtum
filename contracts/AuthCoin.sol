@@ -145,6 +145,8 @@ contract AuthCoin is Ownable {
         EntityIdentityRecord target = getEir(_targetEir);
         require(address(target) != address(0));
 
+        //TODO check if EIR is revoked or not.
+
         // check VAE
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
         var isInitialized = (address(vae)!=address(0));
@@ -281,22 +283,6 @@ contract AuthCoin is Ownable {
     }
 
     /**
-    * @dev Returns the challenge record for given challenge id. Zero address will be returned if challenge id is unknown.
-    */
-    function getChallengeRecord(bytes32 challengeId) public view returns (ChallengeRecord) {
-        //TODO implement
-        return ChallengeRecord(address(0));
-    }
-
-    /**
-    * @dev Returns the challenge response record for given challenge id. Zero address will be returned if challenge id is unknown.
-    */
-    function getChallengeResponseRecord(bytes32 challengeId) public view returns (ChallengeResponseRecord) {
-        //TODO implement
-        return ChallengeResponseRecord(address(0));
-    }
-
-    /**
     * @dev Returns the count of registered entity identity records
     */
     function getEirCount() public view returns (uint) {
@@ -308,6 +294,31 @@ contract AuthCoin is Ownable {
     */
     function getVaeCount() public view returns (uint) {
         return vaeIdList.length;
+    }
+
+    /**
+    * @dev Returns the validation and authentication entry array where EIR id is a participant (verifier or target).
+    */
+    function getVaeArrayByEirId(bytes32 eirId) public view returns (ValidationAuthenticationEntry[]) {
+        // solidity doesn't have dynamic arrays
+        ValidationAuthenticationEntry[] memory eieVaeArray = new ValidationAuthenticationEntry[](vaeIdList.length);
+        uint j = 0;
+        for (uint i = 0; i < vaeIdList.length; i++) {
+            ValidationAuthenticationEntry vae = vaeIdToVae[vaeIdList[i]];
+            if (vae.isParticipant(eirId)) {
+                eieVaeArray[j] = vae;
+                j = j+1;
+            }
+        }
+        if (j == vaeIdList.length) {
+            return eieVaeArray;
+        }
+        // copy only known values
+        ValidationAuthenticationEntry[] memory eieVaeArray2 = new ValidationAuthenticationEntry[](j);
+        for (uint i2 = 0; i2 < j; i2++) {
+            eieVaeArray2[i2] = eieVaeArray[i2];
+        }
+        return eieVaeArray2;
     }
 
 }
