@@ -116,25 +116,38 @@ contract AuthCoin is Ownable {
         bytes32 _hash,
         bytes _signature) public returns (bool)
     {
-        // check VAE
-        ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
-        var isInitialized = (address(vae) != address(0));
 
         // verifier exists
         EntityIdentityRecord verifier = getEir(_verifierEir);
         require(address(verifier) != address(0));
+        //require(verifier.isRevoked() == false);
         //require(owner == verifier.getCreator());
 
         // target exists
         EntityIdentityRecord target = getEir(_targetEir);
         require(address(target) != address(0));
+        //require(target.isRevoked() == false);
         //require(owner == target.getCreator());
 
-        // ensure EIR hash is correct
+        // ensure CR hash is correct
         require(keccak256(_id, _vaeId, _challengeType, _challenge, _verifierEir, _targetEir) == _hash);
 
-        // ensure signature is correct
-        require(verifier.verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
+        // ensure CR signature is correct
+        // TODO: is that sufficent or should we refactor to distinct who is submitting the challenge
+        require(verifier.verifySignature(BytesUtils.bytes32ToString(_hash), _signature) || target.verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
+
+        // check VAE
+        ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
+        var isInitialized = (address(vae)!=address(0));
+
+        if (!isInitialized) {
+            vae = new ValidationAuthenticationEntry(_vaeId, msg.sender);
+            vaeIdToVae[_vaeId] = vae;
+            vaeIdList.push(_vaeId);
+            LogNewVae(vae, _vaeId);
+        } else {
+            //require(owner == vae.getCreator());
+        }
 
         ChallengeRecord cr = new ChallengeRecord(
             _id,
@@ -147,15 +160,6 @@ contract AuthCoin is Ownable {
             _signature,
             msg.sender
         );
-
-        if (!isInitialized) {
-            vae = new ValidationAuthenticationEntry(_vaeId,  msg.sender);
-            vaeIdToVae[_vaeId] = vae;
-            vaeIdList.push(_vaeId);
-            LogNewVae(vae, _vaeId);
-        } else {
-            //require(owner == vae.getCreator());
-        }
         vae.addChallengeRecord(cr);
 
         LogNewChallengeRecord(
@@ -181,12 +185,12 @@ contract AuthCoin is Ownable {
         require(address(vae) != address(0));
         //require(owner == vae.getCreator());
 
-        // ensure CR hash is correct
+        // ensure CRR hash is correct
         require(keccak256(_vaeId, _challengeId, _response) == _hash);
 
-        // TODO: implement
-        // ensure CR signature is correct
-        //require(chalengeOwnerEir.verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
+        // ensure CRR signature is correct
+        ChallengeRecord cr = vae.getChallenge(_challengeId);
+        require(cr.getTarget().verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
 
         ChallengeResponseRecord rr = new ChallengeResponseRecord(
             _vaeId,

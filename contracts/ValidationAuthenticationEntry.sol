@@ -85,11 +85,13 @@ contract ValidationAuthenticationEntry is Identifiable {
         // challenge response doesn't exist
         require(address(responses[_rr.getChallengeRecordId()]) == address(0));
 
-        // TODO rr is signed by correct EIR
-
         responses[_rr.getChallengeRecordId()] = _rr;
         responseIdArray.push(_rr.getChallengeRecordId());
         return true;
+    }
+
+    function getChallenge(bytes32 challengeId) public view returns(ChallengeRecord) {
+        return challenges[challengeId];
     }
 
     function getChallengesCount() public view returns(uint) {
