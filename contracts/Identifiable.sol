@@ -1,3 +1,8 @@
+/**
+ * @title Identifiable
+ * @dev The Identifiable contract has an owner and creator address, and provides basic authorization control
+ * functions, this simplifies the implementation of "user permissions".
+ */
 contract Identifiable {
 
     address private creator;

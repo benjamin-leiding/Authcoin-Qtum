@@ -51,4 +51,12 @@ contract ChallengeResponseRecord is Identifiable {
         return blockNumber;
     }
 
+    function getHash() public view returns (bytes32) {
+        return hash;
+    }
+
+    function getSignature() public view returns (bytes) {
+        return signature;
+    }
+
 }

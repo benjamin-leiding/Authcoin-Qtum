@@ -133,8 +133,7 @@ contract AuthCoin is Ownable {
         require(keccak256(_id, _vaeId, _challengeType, _challenge, _verifierEir, _targetEir) == _hash);
 
         // ensure CR signature is correct
-        // TODO: is that sufficent or should we refactor to distinct who is submitting the challenge
-        require(verifier.verifySignature(BytesUtils.bytes32ToString(_hash), _signature) || target.verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
+        require(verifier.verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
 
         // check VAE
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];

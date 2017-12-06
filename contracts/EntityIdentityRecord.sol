@@ -94,7 +94,6 @@ contract EntityIdentityRecord is Identifiable {
         return signature;
     }
 
-    // TODO: fix tests when adding onlyCreator modifier
     function revoke(bytes revokingSignature) onlyCreator public returns(bool) {
         if(signatureVerifier.verify(BytesUtils.bytes32ToString(keccak256(id, contentType, content, identifiers, true)), revokingSignature, content)) {
             revoked = true;

@@ -32,7 +32,7 @@ contract('AuthCoin & ChallengeResponseRecord', function (accounts) {
 
     let verifierCRContent = web3.fromAscii("Message for signing by verifierEirId", 128)
     let verifierCRHash = web3.toHex("0x8675be9a081011fa72c0cd91432d1ce76a80ad7b6e29b9ec5c122fba0ee90330")
-    let verifierCRSignature = web3.toHex("0xa825205e627102ce48ba44933e63febcc7982e3251732c77f7ea7a5d4db8020350f01edab2857ece1ab22d87113616199ee1a5fa13fddbe8c1a01128fbebbcfb01", 128)
+    let verifierCRSignature = web3.toHex("0x9b5f186d54964e8394f9ab62938e961c037f93e2c6cecc356ef41c1be4964ba51b60f7ef579f7a09f407f50b32926a7900679118522309b3595ed35b6e4b95e601", 128)
 
     // CRR values
     let challengeResponseContent = web3.toHex("0xb983f63954c6af647ae18ab1ca776a55cac2185ce70548b38f7ef04e43810f04466fe7f4cad1a4ea8e2a87d6e829615a29ef6bb5e65150094357a2f79e400e9001")
