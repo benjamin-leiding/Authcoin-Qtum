@@ -1,13 +1,16 @@
 pragma solidity ^0.4.17;
 
 
+import "./Identifiable.sol";
+
+
 /**
 * @dev Entity Identity Record (EIR) contains information that links an entity to a certain
 * identity and the corresponding public key or certificate. EIR is created during the key
 * generation process and posted to the blockchain. 'content' field is used to store public
 * key or certificate and it must be unique.
 */
-contract EntityIdentityRecord {
+contract EntityIdentityRecord is Identifiable {
 
     bytes32 private id;
 
@@ -34,7 +37,7 @@ contract EntityIdentityRecord {
         bytes32 _contentType,
         bytes32 _hash,
         bytes _signature,
-        address _creator) {
+        address _owner) {
         id = keccak256(_content);
         blockNumber = block.number;
         content = _content;
@@ -43,7 +46,7 @@ contract EntityIdentityRecord {
         identifiers = _identifiers;
         hash = _hash;
         signature = _signature;
-        creator = _creator;
+        owner = _owner;
     }
 
     function getId() public view returns (bytes32) {
@@ -76,10 +79,6 @@ contract EntityIdentityRecord {
 
     function getIdentifiers() public view returns (bytes32[]) {
         return identifiers;
-    }
-
-    function getCreator() public view returns (address) {
-        return creator;
     }
 
     function getData() public view returns(
