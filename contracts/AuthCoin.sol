@@ -3,9 +3,6 @@ pragma solidity ^0.4.17;
 
 import "zeppelin/ownership/Ownable.sol";
 import "./EntityIdentityRecord.sol";
-import "./ChallengeRecord.sol";
-import "./ChallengeResponseRecord.sol";
-import "./ChallengeSignatureRecord.sol";
 import "./ValidationAuthenticationEntry.sol";
 import "./signatures/SignatureVerifier.sol";
 import "./signatures/DummyVerifier.sol";

@@ -2,7 +2,6 @@ const util = require('ethereumjs-util');
 var AuthCoin = artifacts.require("AuthCoin");
 var DummyVerifier = artifacts.require("signatures/DummyVerifier");
 var EntityIdentityRecord = artifacts.require("EntityIdentityRecord");
-var ChallengeRecord = artifacts.require("ChallengeRecord");
 var ValidationAuthenticationEntry = artifacts.require("ValidationAuthenticationEntry");
 
 contract('AuthCoin & ChallengeSignatureRecord', function (accounts) {
@@ -54,9 +53,10 @@ contract('AuthCoin & ChallengeSignatureRecord', function (accounts) {
     })
 
     it("supports adding new challenge signature record", async function () {
-        var srEvents = authCoin.LogNewChallengeSignatureRecord({_from: web3.eth.coinbase}, {fromBlock: 0, toBlock: 'latest'});
-
-        await authCoin.registerChallengeSignature(vaeId, challengeId, 1000, true, hash, signature)
+        await authCoin.registerChallengeSignature(vaeId, challengeId, 1000, true, hash, signature).then(function(result) {
+            // TODO: proper way to catch events from subsequent contract calls
+            assert.equal(result.receipt.logs[0].data, "0x00000000000000000000000000000000000000000000000000000000000001e06368616c6c656e676531000000000000000000000000000000000000000000007661653100000000000000000000000000000000000000000000000000000000");
+        });
         assert.equal(await authCoin.getVaeCount(), 1)
 
         let vae = ValidationAuthenticationEntry.at(await authCoin.getVae(vaeId))
@@ -64,11 +64,6 @@ contract('AuthCoin & ChallengeSignatureRecord', function (accounts) {
         assert.equal(await vae.getChallengesCount(), 2)
         assert.equal(await vae.getChallengeResponseCount(), 2)
         assert.equal(await vae.getChallengeSignatureCount(), 1)
-
-        var event = srEvents.get()
-        assert.equal(event.length, 1);
-        assert.equal(event[0].args.challengeId, util.bufferToHex(util.setLengthRight(challengeId, 32)))
-        assert.equal(event[0].args.vaeId, vaeId)
     })
 
     it("should fail if unknown VAE id is provided", async function () {
