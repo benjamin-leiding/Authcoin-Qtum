@@ -2,7 +2,6 @@ const util = require('ethereumjs-util');
 var AuthCoin = artifacts.require("AuthCoin");
 var DummyVerifier = artifacts.require("signatures/DummyVerifier");
 var EntityIdentityRecord = artifacts.require("EntityIdentityRecord");
-var ChallengeRecord = artifacts.require("ChallengeRecord");
 var ValidationAuthenticationEntry = artifacts.require("ValidationAuthenticationEntry");
 
 contract('AuthCoin & ChallengeResponseRecord', function (accounts) {
@@ -53,19 +52,16 @@ contract('AuthCoin & ChallengeResponseRecord', function (accounts) {
     })
 
     it("supports adding new challenge response record", async function () {
-        var rrEvents = authCoin.LogNewChallengeResponseRecord({_from: web3.eth.coinbase}, {fromBlock: 0, toBlock: 'latest'});
-
-        await authCoin.registerChallengeResponse(vaeId, challengeId, web3.fromAscii("content", 128) , hash, signature)
+        await authCoin.registerChallengeResponse(vaeId, challengeId, web3.fromAscii("content", 128) , hash, signature).then(function(result) {
+            // TODO: proper way to catch events from subsequent contract calls
+            assert.equal(result.receipt.logs[0].data, "0x00000000000000000000000000000000000000000000000000000000000002006368616c6c656e67653100000000000000000000000000000000000000000000");
+        });
         assert.equal(await authCoin.getVaeCount(), 1)
 
         let vae = ValidationAuthenticationEntry.at(await authCoin.getVae(vaeId))
         assert.equal(await vae.getVaeId(), vaeId)
         assert.equal(await vae.getChallengesCount(), 2)
         assert.equal(await vae.getChallengeResponseCount(), 1)
-
-        var event = rrEvents.get()
-        assert.equal(event.length, 1);
-        assert.equal(event[0].args.challengeId, util.bufferToHex(util.setLengthRight(challengeId, 32)))
     })
 
     it("should fail when challenge response record is added with unknown VAE id", async function () {

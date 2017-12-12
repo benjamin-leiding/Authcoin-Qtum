@@ -3,9 +3,6 @@ pragma solidity ^0.4.17;
 
 import "zeppelin/ownership/Ownable.sol";
 import "./EntityIdentityRecord.sol";
-import "./ChallengeRecord.sol";
-import "./ChallengeResponseRecord.sol";
-import "./ChallengeSignatureRecord.sol";
 import "./ValidationAuthenticationEntry.sol";
 import "./signatures/SignatureVerifier.sol";
 import "./signatures/DummyVerifier.sol";
@@ -47,12 +44,6 @@ contract AuthCoin is Ownable {
 
     event LogRevokedEir(bytes32 id);
 
-    event LogNewChallengeRecord(ChallengeRecord cr, bytes32 challengeType, bytes32 id, bytes32 vaeId);
-
-    event LogNewChallengeResponseRecord(ChallengeResponseRecord responseAddress, bytes32 challengeId);
-
-    event LogNewChallengeSignatureRecord(ChallengeSignatureRecord sr, bytes32 challengeId, bytes32 vaeId);
-
     event LogNewVae(address vaeAddress, bytes32 id);
 
     event LogNewSignatureVerifier(SignatureVerifier a, bytes32 eirType);
@@ -92,7 +83,7 @@ contract AuthCoin is Ownable {
             _contentType,
             _hash,
             _signature,
-            owner
+            msg.sender
         );
 
         eirIdToEir[id] = eir;
@@ -158,8 +149,7 @@ contract AuthCoin is Ownable {
             LogNewVae(vae, _vaeId);
         }
 
-        ChallengeRecord cr = new ChallengeRecord(
-            _id,
+        vae.addChallengeRecord(_id,
             _vaeId,
             _challengeType,
             _challenge,
@@ -167,16 +157,9 @@ contract AuthCoin is Ownable {
             target,
             _hash,
             _signature,
-            owner
+            msg.sender
         );
-        vae.addChallengeRecord(cr);
 
-        LogNewChallengeRecord(
-            cr,
-            _challengeType,
-            cr.getId(),
-            cr.getVaeId()
-        );
         return true;
     }
 
@@ -192,16 +175,16 @@ contract AuthCoin is Ownable {
     {
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
         require(address(vae) != address(0));
-        ChallengeResponseRecord rr = new ChallengeResponseRecord(
+
+        require(vae.addChallengeResponseRecord(
             _vaeId,
             _challengeId,
             _response,
             _hash,
             _signature,
-            owner
-        );
-        require(vae.addChallengeResponseRecord(rr));
-        LogNewChallengeResponseRecord(rr, _challengeId);
+            msg.sender
+        ));
+
         return true;
     }
 
@@ -220,17 +203,17 @@ contract AuthCoin is Ownable {
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
         require(address(vae) != address(0));
 
-        ChallengeSignatureRecord sr = new ChallengeSignatureRecord(
+
+        require(vae.addChallengeSignatureRecord(
             _vaeId,
             _challengeId,
             _expirationBlock,
             _successful,
             _hash,
             _signature,
-            owner
-        );
-        require(vae.addChallengeSignatureRecord(sr));
-        LogNewChallengeSignatureRecord(sr, _challengeId, _vaeId);
+            msg.sender
+        ));
+
         return true;
     }
 

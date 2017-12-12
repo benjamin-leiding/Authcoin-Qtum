@@ -4,7 +4,6 @@ pragma solidity ^0.4.17;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "../contracts/AuthCoin.sol";
-import "../contracts/ChallengeRecord.sol";
 import "../contracts/EntityIdentityRecord.sol";
 import "../contracts/signatures/RsaSignatureVerifier.sol";
 import "../contracts/signatures/ECSignatureVerifier.sol";
