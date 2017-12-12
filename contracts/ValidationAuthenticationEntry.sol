@@ -15,14 +15,6 @@ import "./EntityIdentityRecord.sol";
 */
 contract ValidationAuthenticationEntry is Identifiable {
 
-    // Identifier used to track the VAE throughout the hole V&A process.
-    bytes32 private vaeId;
-
-    // Block number when the VAE was created and the first CR was attached to the VAE by verifier. If 'target'
-    // does not create a corresponding challenge for the verifier within 24h, we assume the V&A procedure to
-    // be failed.
-    uint private blockNumber;
-
     struct ChallengeRecord {
         bytes32 id;
         uint blockNumber;
@@ -56,6 +48,14 @@ contract ValidationAuthenticationEntry is Identifiable {
         bytes signature;
         address creator;
     }
+
+    // Identifier used to track the VAE throughout the hole V&A process.
+    bytes32 private vaeId;
+
+    // Block number when the VAE was created and the first CR was attached to the VAE by verifier. If 'target'
+    // does not create a corresponding challenge for the verifier within 24h, we assume the V&A procedure to
+    // be failed.
+    uint private blockNumber;
 
     // cr_id = >CR
     mapping(bytes32 => ChallengeRecord) private challenges;
@@ -265,6 +265,39 @@ contract ValidationAuthenticationEntry is Identifiable {
 
     function getChallengeSignature(bytes32 challengeId) public view returns(ChallengeSignatureRecord) {
         return signatures[challengeId];
+    }
+
+    function getChallengeRecordData(bytes32 challengeId) public view returns(
+        bytes32,
+        uint,
+        bytes32,
+        bytes,
+        address,
+        address,
+        bytes32,
+        bytes) {
+        ChallengeRecord storage cr = challenges[challengeId];
+        var length = cr.challenge.length;
+        bytes memory challenge = copyArray(cr.challenge);
+        bytes memory signature = copyArray(cr.signature);
+        return (
+        cr.id,
+        cr.blockNumber,
+        cr.challengeType,
+        challenge,
+        cr.verifierEir,
+        cr.targetEir,
+        cr.hash,
+        signature);
+    }
+
+    function copyArray(bytes a) private view returns(bytes) {
+        bytes memory second = new bytes(a.length);
+
+        for (uint i = 0; i < a.length; i++) {
+            second[i] = a[i];
+        }
+        return second;
     }
 
     modifier onlyCreator() {
