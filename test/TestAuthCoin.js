@@ -21,7 +21,7 @@ contract('AuthCoin', function (accounts) {
 
     it("should override old value if new verifier is added using already registered eir type", async function () {
         let dummyVerifier = await DummyVerifier.new(accounts[0])
-        let dummyVerifier2 = await DummyVerifier.new(accounts[0])
+        let dummyVerifier2 = await DummyVerifier.new(accounts[1])
         await authCoin.registerSignatureVerifier(dummyVerifier.address, eirType)
         await authCoin.registerSignatureVerifier(dummyVerifier2.address, eirType)
 

@@ -3,11 +3,10 @@ pragma solidity ^0.4.17;
 
 import "zeppelin/ownership/Ownable.sol";
 import "./EntityIdentityRecord.sol";
-import "./ChallengeRecord.sol";
-import "./ChallengeResponseRecord.sol";
 import "./ValidationAuthenticationEntry.sol";
 import "./signatures/SignatureVerifier.sol";
-import "./utils/BytesUtils.sol";
+import "./signatures/DummyVerifier.sol";
+
 
 /**
 * @title AuthCoin
@@ -43,15 +42,12 @@ contract AuthCoin is Ownable {
 
     event LogNewEir(bytes32 id, EntityIdentityRecord eir, bytes32 contentType);
 
-    event LogNewChallengeRecord(ChallengeRecord cr, bytes32 challengeType, bytes32 id, bytes32 vaeId);
-
-    event LogNewChallengeResponseRecord(ChallengeResponseRecord responseAddress, bytes32 challengeId);
-
     event LogNewVae(address vaeAddress, bytes32 id);
 
     event LogNewSignatureVerifier(SignatureVerifier a, bytes32 eirType);
 
     function AuthCoin() {
+
     }
 
     /**
@@ -148,8 +144,7 @@ contract AuthCoin is Ownable {
             //require(owner == vae.getCreator());
         }
 
-        ChallengeRecord cr = new ChallengeRecord(
-            _id,
+        vae.addChallengeRecord(_id,
             _vaeId,
             _challengeType,
             _challenge,
@@ -159,14 +154,7 @@ contract AuthCoin is Ownable {
             _signature,
             msg.sender
         );
-        vae.addChallengeRecord(cr);
 
-        LogNewChallengeRecord(
-            cr,
-            _challengeType,
-            cr.getId(),
-            cr.getVaeId()
-        );
         return true;
     }
 
@@ -184,23 +172,15 @@ contract AuthCoin is Ownable {
         require(address(vae) != address(0));
         //require(owner == vae.getCreator());
 
-        // ensure CRR hash is correct
-        require(keccak256(_vaeId, _challengeId, _response) == _hash);
-
-        // ensure CRR signature is correct
-        ChallengeRecord cr = vae.getChallenge(_challengeId);
-        require(cr.getTarget().verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
-
-        ChallengeResponseRecord rr = new ChallengeResponseRecord(
+        require(vae.addChallengeResponseRecord(
             _vaeId,
             _challengeId,
             _response,
             _hash,
             _signature,
             msg.sender
-        );
-        require(vae.addChallengeResponseRecord(rr));
-        LogNewChallengeResponseRecord(rr, _challengeId);
+        ));
+
         return true;
     }
 
@@ -212,15 +192,23 @@ contract AuthCoin is Ownable {
         bytes32 _challengeId,
         uint _expirationBlock,
         bool _successful,
-        bytes32[] _hash,
+        bytes32 _hash,
         bytes _signature) public returns (bool)
     {
         // check vae id. vae must exist and should be in correct status.
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
         require(address(vae) != address(0));
-        //require(owner == vae.getCreator());
+        // TODO: check correct status
 
-        //TODO implement
+        require(vae.addChallengeSignatureRecord(
+            _vaeId,
+            _challengeId,
+            _expirationBlock,
+            _successful,
+            _hash,
+            _signature,
+            msg.sender
+        ));
         return true;
     }
 
@@ -230,15 +218,14 @@ contract AuthCoin is Ownable {
     * contract can add new signature verifiers.
     *
     * @param signatureVerifier signature verifier address
-    * @param eirType EIR type the signature verifier is implemented for
-    * @return true if signature verifier registration is successful
+    * @param eirType EIR type the signature verifier is implemented
+    * @return true if signature verifier registration is successful.
     */
     function registerSignatureVerifier(SignatureVerifier signatureVerifier, bytes32 eirType) onlyOwner public returns (bool) {
         if (address(signatureVerifiers[eirType]) == address(0)) {
             verifierIdList.push(eirType);
         }
         signatureVerifiers[eirType] = signatureVerifier;
-
         LogNewSignatureVerifier(signatureVerifier, eirType);
         return true;
     }
@@ -273,22 +260,6 @@ contract AuthCoin is Ownable {
     }
 
     /**
-    * @dev Returns the challenge record for given challenge id. Zero address will be returned if challenge id is unknown.
-    */
-    function getChallengeRecord(bytes32 challengeId) public view returns (ChallengeRecord) {
-        //TODO implement
-        return ChallengeRecord(address(0));
-    }
-
-    /**
-    * @dev Returns the challenge response record for given challenge id. Zero address will be returned if challenge id is unknown.
-    */
-    function getChallengeResponseRecord(bytes32 challengeId) public view returns (ChallengeResponseRecord) {
-        //TODO implement
-        return ChallengeResponseRecord(address(0));
-    }
-
-    /**
     * @dev Returns the count of registered entity identity records
     */
     function getEirCount() public view returns (uint) {
@@ -300,6 +271,31 @@ contract AuthCoin is Ownable {
     */
     function getVaeCount() public view returns (uint) {
         return vaeIdList.length;
+    }
+
+    /**
+    * @dev Returns the validation and authentication entry array where EIR id is a participant (verifier or target).
+    */
+    function getVaeArrayByEirId(bytes32 eirId) public view returns (ValidationAuthenticationEntry[]) {
+        // solidity doesn't have dynamic arrays
+        ValidationAuthenticationEntry[] memory eieVaeArray = new ValidationAuthenticationEntry[](vaeIdList.length);
+        uint j = 0;
+        for (uint i = 0; i < vaeIdList.length; i++) {
+            ValidationAuthenticationEntry vae = vaeIdToVae[vaeIdList[i]];
+            if (vae.isParticipant(eirId)) {
+                eieVaeArray[j] = vae;
+                j = j+1;
+            }
+        }
+        if (j == vaeIdList.length) {
+            return eieVaeArray;
+        }
+        // copy only known values
+        ValidationAuthenticationEntry[] memory eieVaeArray2 = new ValidationAuthenticationEntry[](j);
+        for (uint i2 = 0; i2 < j; i2++) {
+            eieVaeArray2[i2] = eieVaeArray[i2];
+        }
+        return eieVaeArray2;
     }
 
 }

@@ -32,8 +32,8 @@ contract('AuthCoin & EntityIdentityRecord', function (accounts) {
 
     it("supports adding new EIR values", async function () {
         var events = authCoin.LogNewEir({_from:web3.eth.coinbase},{fromBlock: 0, toBlock: 'latest'});
-
         await authCoin.registerEir(content, contentType, identifiers, hash, signature)
+
         assert.equal(await authCoin.getEirCount(), 1)
 
         let eir = EntityIdentityRecord.at(await authCoin.getEir(id))

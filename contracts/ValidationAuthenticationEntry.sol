@@ -1,14 +1,12 @@
 pragma solidity ^0.4.17;
 
 
-import "./ChallengeRecord.sol";
-import "./ChallengeResponseRecord.sol";
-import "./EntityIdentityRecord.sol";
 import "./Identifiable.sol";
+import "./EntityIdentityRecord.sol";
 
 
 /*
-* @dev Tracks and stores the information produced by the validation & authentication process. During the V&A process,
+* @dev Tracks and stores the information produced by single validation & authentication process. During the V&A process,
 * the verifier and target:
 *   1. exchange challenges (CR - ChallengeRecord) with each other and
 *   2. create the corresponding responses (RR - ResponseRecord) and
@@ -25,6 +23,40 @@ contract ValidationAuthenticationEntry is Identifiable {
     // be failed.
     uint private blockNumber;
 
+    struct ChallengeRecord {
+        bytes32 id;
+        uint blockNumber;
+        bytes32 challengeType;
+        bytes challenge;
+        address verifierEir;
+        address targetEir;
+        bytes32 hash;
+        bytes signature;
+        address creator;
+    }
+
+    struct ChallengeResponseRecord {
+        bytes32 vaeId;
+        bytes32 challengeRecordId;
+        uint blockNumber;
+        bytes response;
+        bytes32 hash;
+        bytes signature;
+        address creator;
+    }
+
+    struct ChallengeSignatureRecord {
+        bytes32 vaeId;
+        bytes32 challengeRecordId;
+        uint blockNumber;
+        uint expirationBlock;
+        bool revoked;
+        bool successful;
+        bytes32 hash;
+        bytes signature;
+        address creator;
+    }
+
     // cr_id = >CR
     mapping(bytes32 => ChallengeRecord) private challenges;
     // cr_id array
@@ -35,6 +67,18 @@ contract ValidationAuthenticationEntry is Identifiable {
 
     // cr_id array
     bytes32[] private responseIdArray;
+
+    // cr_id => ChallengeSignatureRecord
+    mapping(bytes32 => ChallengeSignatureRecord) private signatures;
+
+    // cr_id array
+    bytes32[] private signatureIdArray;
+
+    event LogNewChallengeRecord(ChallengeRecord cr, bytes32 challengeType, bytes32 id, bytes32 vaeId);
+
+    event LogNewChallengeResponseRecord(ChallengeResponseRecord responseAddress, bytes32 challengeId);
+
+    event LogNewChallengeSignatureRecord(ChallengeSignatureRecord sr, bytes32 challengeId, bytes32 vaeId);
 
     // Constructor to create a new V&A entry.
     function ValidationAuthenticationEntry(
@@ -53,65 +97,180 @@ contract ValidationAuthenticationEntry is Identifiable {
         return blockNumber;
     }
 
-    function addChallengeRecord(ChallengeRecord _cr) onlyCreator public returns (bool) {
-        // _cr isn't zero address
-        require(address(_cr) != address(0));
-        require(_cr.getVaeId() == vaeId); //test ok
+    function addChallengeRecord(
+        bytes32 _crId,
+        bytes32 _vaeId,
+        bytes32 _challengeType,
+        bytes _challenge,
+        address _verifierEir,
+        address _targetEir,
+        bytes32 _hash,
+        bytes _signature,
+        address _creator
+    ) onlyCreator public returns (bool) {
+        require(vaeId == _vaeId);
         // 0 or 1 challenges
         require(challengeIdArray.length < 2); // test ok
-        bytes32 crId = _cr.getId();
 
+        ChallengeRecord memory cr = ChallengeRecord(
+            _crId,
+            block.number,
+            _challengeType,
+            _challenge,
+            _verifierEir,
+            _targetEir,
+            _hash,
+            _signature,
+            _creator
+        );
         // TODO CR is signed by correct EIR
 
         if (challengeIdArray.length == 1) {
-            require(challenges[crId] == address(0)); // test ok
+            require(challenges[_crId].creator == address(0)); // test ok
             ChallengeRecord previous = challenges[challengeIdArray[0]];
-            require(previous.getVerifier() == _cr.getTarget()); // test ok
-            require(_cr.getVerifier() == previous.getTarget()); // test ok
+            require(previous.verifierEir == _targetEir); // test ok
+            require(_verifierEir == previous.targetEir); // test ok
         }
 
-        challenges[crId] = _cr;
-        challengeIdArray.push(crId);
+        challenges[_crId] = cr;
+        challengeIdArray.push(_crId);
+        LogNewChallengeRecord(
+             cr,
+             _challengeType,
+             _crId,
+             _vaeId
+         );
         return true;
     }
 
-    function addChallengeResponseRecord(ChallengeResponseRecord _rr) onlyCreator public returns (bool) {
+    function addChallengeResponseRecord(
+        bytes32 _vaeId,
+        bytes32 _challengeRecordId,
+        bytes _response,
+        bytes32 _hash,
+        bytes _signature,
+        address _creator
+    ) onlyCreator public returns (bool) {
         require(challengeIdArray.length == 2);
         require(responseIdArray.length < 2);
-        require(address(_rr) != address(0));
-        require(_rr.getVaeId() == vaeId);
+        require(vaeId == _vaeId);
         // challenge exists
-        require(address(challenges[_rr.getChallengeRecordId()]) != address(0));
+        require(challenges[_challengeRecordId].creator != address(0));
         // challenge response doesn't exist
-        require(address(responses[_rr.getChallengeRecordId()]) == address(0));
+        require(responses[_challengeRecordId].creator == address(0));
 
-        responses[_rr.getChallengeRecordId()] = _rr;
-        responseIdArray.push(_rr.getChallengeRecordId());
+        // ensure CRR hash is correct
+        require(keccak256(_vaeId, _challengeRecordId, _response) == _hash);
+
+        // ensure CRR signature is correct
+        ChallengeRecord cr = challenges[_challengeRecordId];
+        require(EntityIdentityRecord(cr.targetEir).verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
+
+        ChallengeResponseRecord memory rr = ChallengeResponseRecord(
+            _vaeId,
+            _challengeRecordId,
+            block.number,
+            _response,
+            _hash,
+            _signature,
+            _creator
+        );
+
+        responses[_challengeRecordId] = rr;
+        responseIdArray.push(_challengeRecordId);
+
+        LogNewChallengeResponseRecord(rr, _challengeRecordId);
         return true;
+    }
+
+    function addChallengeSignatureRecord(
+        bytes32 _vaeId,
+        bytes32 _challengeRecordId,
+        uint _expirationBlock,
+        bool _successful,
+        bytes32 _hash,
+        bytes _signature,
+        address _creator
+    ) onlyCreator public returns (bool) {
+        require(challengeIdArray.length == 2); // ok
+        require(responseIdArray.length == 2); // ok
+        require(signatureIdArray.length < 2);
+
+        // challenge exists
+        ChallengeRecord cr = challenges[_challengeRecordId];
+        require(cr.creator != address(0));
+        // challenge response exist
+        require(responses[_challengeRecordId].creator != address(0));
+        // challenge response doesn't exist
+        require(signatures[_challengeRecordId].creator == address(0));
+        // ensure SR hash is correct
+        require(keccak256(_vaeId, _challengeRecordId, _expirationBlock, _successful) == _hash);
+        // ensure SR signature is correct
+
+        require(EntityIdentityRecord(cr.verifierEir).verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
+
+        ChallengeSignatureRecord memory sr = ChallengeSignatureRecord(
+            _vaeId,
+            _challengeRecordId,
+            block.number,
+            _expirationBlock,
+            false,
+            _successful,
+            _hash,
+            _signature,
+            _creator
+        );
+
+        signatures[_challengeRecordId] = sr;
+        signatureIdArray.push(_challengeRecordId);
+        LogNewChallengeSignatureRecord(sr, _challengeRecordId, _vaeId);
+        return true;
+    }
+
+    function getChallengeCount() public view returns(uint) {
+        return challengeIdArray.length;
+    }
+
+    function getChallengeIds() public view returns(bytes32[]) {
+        return challengeIdArray;
     }
 
     function getChallenge(bytes32 challengeId) public view returns(ChallengeRecord) {
         return challenges[challengeId];
     }
 
-    function getChallengesCount() public view returns(uint) {
-        return challengeIdArray.length;
+    function isParticipant(bytes32 eirId) public view returns(bool) {
+        for (uint i = 0; i < challengeIdArray.length; i++) {
+            ChallengeRecord cr = challenges[challengeIdArray[i]];
+            if (EntityIdentityRecord(cr.verifierEir).getId() == eirId || EntityIdentityRecord(cr.targetEir).getId() == eirId) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function getChallengeResponseCount() public view returns(uint) {
         return responseIdArray.length;
     }
 
-    // Returns the status of current V&A process. Returns one of the following values:
-    //    0 - waiting_challenge_record
-    //    1 - waiting_challenge_response_record(s)
-    //    2 - waiting_challenge_signature_record(s)
-    //    3 - failed
-    //    4 - revoked
-    //    5 - successful
-    function getStatus() public view returns (uint) {
-        // TODO implement
-        return 0;
+    function getChallengeResponseIds() public view returns(bytes32[]) {
+        return responseIdArray;
+    }
+
+    function getChallengeResponse(bytes32 challengeId) public view returns(ChallengeResponseRecord) {
+        return responses[challengeId];
+    }
+
+    function getChallengeSignatureCount() public view returns(uint) {
+        return signatureIdArray.length;
+    }
+
+    function getChallengeSignatureIds() public view returns(bytes32[]) {
+        return signatureIdArray;
+    }
+
+    function getChallengeSignature(bytes32 challengeId) public view returns(ChallengeSignatureRecord) {
+        return signatures[challengeId];
     }
 
 }

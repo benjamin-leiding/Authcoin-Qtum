@@ -2,7 +2,6 @@ const util = require('ethereumjs-util');
 var AuthCoin = artifacts.require("AuthCoin");
 var DummyVerifier = artifacts.require("signatures/DummyVerifier");
 var EntityIdentityRecord = artifacts.require("EntityIdentityRecord");
-var ChallengeRecord = artifacts.require("ChallengeRecord");
 var ValidationAuthenticationEntry = artifacts.require("ValidationAuthenticationEntry");
 
 contract('AuthCoin & ChallengeRecord', function (accounts) {
@@ -43,7 +42,6 @@ contract('AuthCoin & ChallengeRecord', function (accounts) {
         eir2 = EntityIdentityRecord.at(await authCoin.getEir(id2))
         verifierEirId = await eir1.getId()
         targetEirId = await eir2.getId()
-
     })
 
     it("should fail when challenge records is added using unknown verifier EIR", async function () {
@@ -72,11 +70,33 @@ contract('AuthCoin & ChallengeRecord', function (accounts) {
 
         let vae = ValidationAuthenticationEntry.at(await authCoin.getVae(vaeId))
         assert.equal(await vae.getVaeId(), vaeId)
-        assert.equal(await vae.getChallengesCount(), 1)
+        assert.equal(await vae.getChallengeCount(), 1)
 
         var event = vaeEvents.get()
         assert.equal(event.length, 1);
         assert.equal(event[0].args.id, vaeId)
+    })
+
+    it("querying VAE array by EIR id", async function () {
+        var vaeEvents = authCoin.LogNewVae({_from: web3.eth.coinbase}, {fromBlock: 0, toBlock: 'latest'});
+        await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, verifierEirId, targetEirId, challengeHash, challengeSignature)
+
+        assert.equal(await authCoin.getVaeCount(), 1)
+
+        let vaeArray = await authCoin.getVaeArrayByEirId(verifierEirId);
+        assert.equal(vaeArray.length, 1)
+
+        let vaeArray2 = await authCoin.getVaeArrayByEirId(targetEirId);
+        assert.equal(vaeArray2.length, 1)
+        assert.equal(vaeArray[0], vaeArray2[0])
+
+        var event = vaeEvents.get()
+        assert.equal(event[0].args.vaeAddress, vaeArray[0])
+    })
+
+    it("querying VAE array by EIR that doesn't have any challenges return empty array", async function () {
+        let vaeArray = await authCoin.getVaeArrayByEirId(verifierEirId);
+        assert.equal(vaeArray.length, 0)
     })
 
 })

@@ -5,7 +5,6 @@ import "./Identifiable.sol";
 import "./signatures/SignatureVerifier.sol";
 import "./utils/BytesUtils.sol";
 
-
 /**
 * @dev Entity Identity Record (EIR) contains information that links an entity to a certain
 * identity and the corresponding public key or certificate. EIR is created during the key
@@ -24,7 +23,7 @@ contract EntityIdentityRecord is Identifiable {
 
     bool private revoked;
 
-    uint private blocNumber;
+    uint private blockNumber;
 
     bytes32 private hash;
 
@@ -43,12 +42,12 @@ contract EntityIdentityRecord is Identifiable {
         SignatureVerifier _signatureVerifier,
         address _owner) {
         id = keccak256(_content);
-        blocNumber = block.number;
+        blockNumber = block.number;
         content = _content;
         contentType = _contentType;
         revoked = false;
         identifiers = _identifiers;
-        hash == _hash;
+        hash = _hash;
         signature = _signature;
         signatureVerifier = _signatureVerifier;
         owner = _owner;
@@ -58,8 +57,8 @@ contract EntityIdentityRecord is Identifiable {
         return id;
     }
 
-    function getBlocNumber() public view returns (uint) {
-        return blocNumber;
+    function getBlockNumber() public view returns (uint) {
+        return blockNumber;
     }
 
     function getContent() public view returns (bytes) {
