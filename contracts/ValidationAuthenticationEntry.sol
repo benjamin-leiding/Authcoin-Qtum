@@ -15,6 +15,40 @@ import "./EntityIdentityRecord.sol";
 */
 contract ValidationAuthenticationEntry is Identifiable {
 
+    struct ChallengeRecord {
+    bytes32 id;
+    uint blockNumber;
+    bytes32 challengeType;
+    bytes challenge;
+    address verifierEir;
+    address targetEir;
+    bytes32 hash;
+    bytes signature;
+    address creator;
+    }
+
+    struct ChallengeResponseRecord {
+    bytes32 vaeId;
+    bytes32 challengeRecordId;
+    uint blockNumber;
+    bytes response;
+    bytes32 hash;
+    bytes signature;
+    address creator;
+    }
+
+    struct ChallengeSignatureRecord {
+    bytes32 vaeId;
+    bytes32 challengeRecordId;
+    uint blockNumber;
+    uint expirationBlock;
+    bool revoked;
+    bool successful;
+    bytes32 hash;
+    bytes signature;
+    address creator;
+    }
+
     // Identifier used to track the VAE throughout the hole V&A process.
     bytes32 private vaeId;
 
@@ -22,40 +56,6 @@ contract ValidationAuthenticationEntry is Identifiable {
     // does not create a corresponding challenge for the verifier within 24h, we assume the V&A procedure to
     // be failed.
     uint private blockNumber;
-
-    struct ChallengeRecord {
-        bytes32 id;
-        uint blockNumber;
-        bytes32 challengeType;
-        bytes challenge;
-        address verifierEir;
-        address targetEir;
-        bytes32 hash;
-        bytes signature;
-        address creator;
-    }
-
-    struct ChallengeResponseRecord {
-        bytes32 vaeId;
-        bytes32 challengeRecordId;
-        uint blockNumber;
-        bytes response;
-        bytes32 hash;
-        bytes signature;
-        address creator;
-    }
-
-    struct ChallengeSignatureRecord {
-        bytes32 vaeId;
-        bytes32 challengeRecordId;
-        uint blockNumber;
-        uint expirationBlock;
-        bool revoked;
-        bool successful;
-        bytes32 hash;
-        bytes signature;
-        address creator;
-    }
 
     // cr_id = >CR
     mapping(bytes32 => ChallengeRecord) private challenges;
@@ -82,8 +82,8 @@ contract ValidationAuthenticationEntry is Identifiable {
 
     // Constructor to create a new V&A entry.
     function ValidationAuthenticationEntry(
-        bytes32 _vaeId,
-        address _owner) {
+    bytes32 _vaeId,
+    address _owner) {
         vaeId = _vaeId;
         blockNumber = block.number;
         owner = _owner;
@@ -98,30 +98,30 @@ contract ValidationAuthenticationEntry is Identifiable {
     }
 
     function addChallengeRecord(
-        bytes32 _crId,
-        bytes32 _vaeId,
-        bytes32 _challengeType,
-        bytes _challenge,
-        address _verifierEir,
-        address _targetEir,
-        bytes32 _hash,
-        bytes _signature,
-        address _creator
+    bytes32 _crId,
+    bytes32 _vaeId,
+    bytes32 _challengeType,
+    bytes _challenge,
+    address _verifierEir,
+    address _targetEir,
+    bytes32 _hash,
+    bytes _signature,
+    address _creator
     ) onlyCreator public returns (bool) {
         require(vaeId == _vaeId);
         // 0 or 1 challenges
         require(challengeIdArray.length < 2); // test ok
 
         ChallengeRecord memory cr = ChallengeRecord(
-            _crId,
-            block.number,
-            _challengeType,
-            _challenge,
-            _verifierEir,
-            _targetEir,
-            _hash,
-            _signature,
-            _creator
+        _crId,
+        block.number,
+        _challengeType,
+        _challenge,
+        _verifierEir,
+        _targetEir,
+        _hash,
+        _signature,
+        _creator
         );
         // TODO CR is signed by correct EIR
 
@@ -135,21 +135,21 @@ contract ValidationAuthenticationEntry is Identifiable {
         challenges[_crId] = cr;
         challengeIdArray.push(_crId);
         LogNewChallengeRecord(
-             cr,
-             _challengeType,
-             _crId,
-             _vaeId
-         );
+        cr,
+        _challengeType,
+        _crId,
+        _vaeId
+        );
         return true;
     }
 
     function addChallengeResponseRecord(
-        bytes32 _vaeId,
-        bytes32 _challengeRecordId,
-        bytes _response,
-        bytes32 _hash,
-        bytes _signature,
-        address _creator
+    bytes32 _vaeId,
+    bytes32 _challengeRecordId,
+    bytes _response,
+    bytes32 _hash,
+    bytes _signature,
+    address _creator
     ) onlyCreator public returns (bool) {
         require(challengeIdArray.length == 2);
         require(responseIdArray.length < 2);
@@ -167,13 +167,13 @@ contract ValidationAuthenticationEntry is Identifiable {
         require(EntityIdentityRecord(cr.targetEir).verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
 
         ChallengeResponseRecord memory rr = ChallengeResponseRecord(
-            _vaeId,
-            _challengeRecordId,
-            block.number,
-            _response,
-            _hash,
-            _signature,
-            _creator
+        _vaeId,
+        _challengeRecordId,
+        block.number,
+        _response,
+        _hash,
+        _signature,
+        _creator
         );
 
         responses[_challengeRecordId] = rr;
@@ -184,13 +184,13 @@ contract ValidationAuthenticationEntry is Identifiable {
     }
 
     function addChallengeSignatureRecord(
-        bytes32 _vaeId,
-        bytes32 _challengeRecordId,
-        uint _expirationBlock,
-        bool _successful,
-        bytes32 _hash,
-        bytes _signature,
-        address _creator
+    bytes32 _vaeId,
+    bytes32 _challengeRecordId,
+    uint _expirationBlock,
+    bool _successful,
+    bytes32 _hash,
+    bytes _signature,
+    address _creator
     ) onlyCreator public returns (bool) {
         require(challengeIdArray.length == 2); // ok
         require(responseIdArray.length == 2); // ok
@@ -210,15 +210,15 @@ contract ValidationAuthenticationEntry is Identifiable {
         require(EntityIdentityRecord(cr.verifierEir).verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
 
         ChallengeSignatureRecord memory sr = ChallengeSignatureRecord(
-            _vaeId,
-            _challengeRecordId,
-            block.number,
-            _expirationBlock,
-            false,
-            _successful,
-            _hash,
-            _signature,
-            _creator
+        _vaeId,
+        _challengeRecordId,
+        block.number,
+        _expirationBlock,
+        false,
+        _successful,
+        _hash,
+        _signature,
+        _creator
         );
 
         signatures[_challengeRecordId] = sr;
@@ -271,6 +271,39 @@ contract ValidationAuthenticationEntry is Identifiable {
 
     function getChallengeSignature(bytes32 challengeId) public view returns(ChallengeSignatureRecord) {
         return signatures[challengeId];
+    }
+
+    function getChallengeRecordData(bytes32 challengeId) public view returns(
+    bytes32,
+    uint,
+    bytes32,
+    bytes,
+    address,
+    address,
+    bytes32,
+    bytes) {
+        ChallengeRecord storage cr = challenges[challengeId];
+        var length = cr.challenge.length;
+        bytes memory challenge = copyArray(cr.challenge);
+        bytes memory signature = copyArray(cr.signature);
+        return (
+        cr.id,
+        cr.blockNumber,
+        cr.challengeType,
+        challenge,
+        cr.verifierEir,
+        cr.targetEir,
+        cr.hash,
+        signature);
+    }
+
+    function copyArray(bytes a) private view returns(bytes) {
+        bytes memory second = new bytes(a.length);
+
+        for (uint i = 0; i < a.length; i++) {
+            second[i] = a[i];
+        }
+        return second;
     }
 
 }

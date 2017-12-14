@@ -131,6 +131,8 @@ contract AuthCoin is Ownable {
         // ensure CR signature is correct
         require(verifier.verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
 
+        //TODO check if EIR is revoked or not.
+
         // check VAE
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
         var isInitialized = (address(vae)!=address(0));
@@ -187,7 +189,7 @@ contract AuthCoin is Ownable {
     /**
     * @dev Registers a challenge response signature record.
     */
-    function registerSignatureRecord(
+    function registerChallengeSignature(
         bytes32 _vaeId,
         bytes32 _challengeId,
         uint _expirationBlock,
@@ -209,6 +211,7 @@ contract AuthCoin is Ownable {
             _signature,
             msg.sender
         ));
+
         return true;
     }
 

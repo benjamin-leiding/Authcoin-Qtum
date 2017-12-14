@@ -70,7 +70,7 @@ contract('AuthCoin & ChallengeResponseRecord', function (accounts) {
     it("should add target ChallengeSignatureRecord with valid hash and signature by EIR1 (Alice)", async function () {
         let success = false
         try {
-            await authCoin.registerSignatureRecord(vaeIdForTracking, challengeIdForEir1, 1000, true, eir2SRHash, eir2SRSignature) // Eir1 accepts Eir2
+            await authCoin.registerChallengeSignature(vaeIdForTracking, challengeIdForEir1, 1000, true, eir2SRHash, eir2SRSignature) // Eir1 accepts Eir2
             success = true
         } catch (error) {}
         assert.isOk(success)
@@ -79,7 +79,7 @@ contract('AuthCoin & ChallengeResponseRecord', function (accounts) {
     it("should add target ChallengeSignatureRecord with valid hash and signature by EIR2 (Bob)", async function () {
         let success = false
         try {
-            await authCoin.registerSignatureRecord(vaeIdForTracking, challengeIdForEir2, 1000, true, eir1SRHash, eir1SRSignature) // Eir1 accepts Eir2
+            await authCoin.registerChallengeSignature(vaeIdForTracking, challengeIdForEir2, 1000, true, eir1SRHash, eir1SRSignature) // Eir1 accepts Eir2
             success = true
         } catch (error) {}
         assert.isOk(success)

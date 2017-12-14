@@ -28,7 +28,6 @@ contract('AuthCoin & ChallengeRecord', function (accounts) {
     let challengeType = web3.fromAscii("signing challenge")
     let challenge = web3.fromAscii("sign value 'HELLO'", 128)
     let challengeHash = web3.toHex("0x342f63fcce85352bb0cdacb05dcc17bcab0c0586289dd799678b210623d9f7ce")
-    let challengeSignature = web3.toHex("0x533bb96df50b7ae3013f552a763216aa99d4fb432a98c0f951752a431031cf7c8c5959ebd9d3f54beb9f35e60029b9c4157cf067cece3f1b49977c77576e3327", 128)
 
     let signature = web3.fromAscii("signature", 128)
 
@@ -47,7 +46,7 @@ contract('AuthCoin & ChallengeRecord', function (accounts) {
     it("should fail when challenge records is added using unknown verifier EIR", async function () {
         let success = false
         try {
-            await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, web3.fromAscii("dummy", 32), targetEirId, challengeHash, challengeSignature)
+            await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, web3.fromAscii("dummy", 32), targetEirId, challengeHash, signature)
             success = true
         } catch (error) {}
         assert.isNotOk(success)
@@ -56,7 +55,7 @@ contract('AuthCoin & ChallengeRecord', function (accounts) {
     it("should fail when challenge records is added using unknown target EIR", async function () {
         let success = false
         try {
-            await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, verifierEirId, web3.fromAscii("dummy", 32), challengeHash, challengeSignature)
+            await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, verifierEirId, web3.fromAscii("dummy", 32), challengeHash, signature)
             success = true
         } catch (error) {}
         assert.isNotOk(success)
@@ -65,7 +64,7 @@ contract('AuthCoin & ChallengeRecord', function (accounts) {
     it("supports adding new challenge record", async function () {
         var vaeEvents = authCoin.LogNewVae({_from: web3.eth.coinbase}, {fromBlock: 0, toBlock: 'latest'});
 
-        await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, verifierEirId, targetEirId, challengeHash, challengeSignature)
+        await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, verifierEirId, targetEirId, challengeHash, signature)
         assert.equal(await authCoin.getVaeCount(), 1)
 
         let vae = ValidationAuthenticationEntry.at(await authCoin.getVae(vaeId))
@@ -79,7 +78,7 @@ contract('AuthCoin & ChallengeRecord', function (accounts) {
 
     it("querying VAE array by EIR id", async function () {
         var vaeEvents = authCoin.LogNewVae({_from: web3.eth.coinbase}, {fromBlock: 0, toBlock: 'latest'});
-        await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, verifierEirId, targetEirId, challengeHash, challengeSignature)
+        await authCoin.registerChallengeRecord(challengeId, vaeId, challengeType, challenge, verifierEirId, targetEirId, challengeHash, signature)
 
         assert.equal(await authCoin.getVaeCount(), 1)
 

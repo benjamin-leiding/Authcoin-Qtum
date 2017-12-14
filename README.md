@@ -81,7 +81,7 @@ The following _qtum-cli_ command can be used to register new challenge record:
 ```
 TODO
 ```
-## Posting a Challenge Response Record <a name="rr_post"></a> ##
+## Posting Challenge Response Record <a name="rr_post"></a> ##
 
 A challenge response record (RR) is created as part of the validation and authentication process. The verifier and the 
 target create responses to the corresponding challenge requests. A RR contains the response itself and related information. 
@@ -101,6 +101,9 @@ input parameters:
 ```
 TODO fix the table and add commands
 ```
+## Posting Challenge Signature Record <a name="sr_post"></a> ##
+
+TODO:
 
 # Development #
 

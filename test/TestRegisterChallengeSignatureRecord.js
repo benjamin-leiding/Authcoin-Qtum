@@ -64,7 +64,7 @@ contract('AuthCoin & ChallengeSignatureRecord', function (accounts) {
     })
 
     it("supports adding new challenge signature record", async function () {
-        await authCoin.registerSignatureRecord(vaeId, challengeId, 1000, true, signatureRecordHash, signature).then(function(result) {
+        await authCoin.registerChallengeSignature(vaeId, challengeId, 1000, true, signatureRecordHash, signature).then(function(result) {
             // TODO: proper way to catch events from subsequent contract calls
             assert.equal(result.receipt.logs[0].data, "0x0000000000000000000000000000000000000000000000000000000000000a806368616c6c656e676531000000000000000000000000000000000000000000007661653100000000000000000000000000000000000000000000000000000000");
         });
