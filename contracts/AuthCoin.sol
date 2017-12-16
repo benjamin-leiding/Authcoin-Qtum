@@ -116,14 +116,14 @@ contract AuthCoin is Ownable {
         // verifier exists
         EntityIdentityRecord verifier = getEir(_verifierEir);
         require(address(verifier) != address(0));
-        //require(verifier.isRevoked() == false);
-        //require(owner == verifier.getCreator());
+        require(verifier.isRevoked() == false);
+        require(this == verifier.getCreator());
 
         // target exists
         EntityIdentityRecord target = getEir(_targetEir);
         require(address(target) != address(0));
-        //require(target.isRevoked() == false);
-        //require(owner == target.getCreator());
+        require(target.isRevoked() == false);
+        require(this == target.getCreator());
 
         // ensure CR hash is correct
         require(keccak256(_id, _vaeId, _challengeType, _challenge, _verifierEir, _targetEir) == _hash);
@@ -143,7 +143,7 @@ contract AuthCoin is Ownable {
             vaeIdList.push(_vaeId);
             LogNewVae(vae, _vaeId);
         } else {
-            //require(owner == vae.getCreator());
+            require(this == vae.getCreator());
         }
 
         vae.addChallengeRecord(_id,
@@ -172,7 +172,7 @@ contract AuthCoin is Ownable {
     {
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
         require(address(vae) != address(0));
-        //require(owner == vae.getCreator());
+        require(this == vae.getCreator());
 
         require(vae.addChallengeResponseRecord(
             _vaeId,
