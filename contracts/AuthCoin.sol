@@ -47,7 +47,7 @@ contract AuthCoin is Ownable {
     event LogNewSignatureVerifier(SignatureVerifier a, bytes32 eirType);
 
     function AuthCoin() {
-
+        registerSignatureVerifier(new DummyVerifier(), bytes32("test"));
     }
 
     /**
