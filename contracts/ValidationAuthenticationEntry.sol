@@ -277,7 +277,6 @@ contract ValidationAuthenticationEntry is Identifiable {
         bytes32,
         bytes) {
         ChallengeRecord storage cr = challenges[challengeId];
-        var length = cr.challenge.length;
         bytes memory challenge = copyArray(cr.challenge);
         bytes memory signature = copyArray(cr.signature);
         return (
@@ -291,7 +290,50 @@ contract ValidationAuthenticationEntry is Identifiable {
         signature);
     }
 
-    function copyArray(bytes a) private view returns(bytes) {
+    function getChallengeResponseRecordData(bytes32 challengeId) public view returns(
+        bytes32, // vaeId
+        bytes32, // challengeRecordId
+        uint, // blockNumber
+        bytes, // response
+        bytes32, // hash
+        bytes) {
+        ChallengeResponseRecord storage rr = responses[challengeId];
+        bytes memory response = copyArray(rr.response);
+        bytes memory signature = copyArray(rr.signature);
+        return (
+            rr.vaeId,
+            rr.challengeRecordId,
+            rr.blockNumber,
+            response,
+            rr.hash,
+            signature
+        );
+    }
+
+    function getChallengeSignatureRecordData(bytes32 challengeId) public view returns(
+        bytes32, // vaeId;
+        bytes32, // challengeRecordId;
+        uint, // blockNumber;
+        uint, // expirationBlock;
+        bool, // revoked;
+        bool, // successful;
+        bytes32, // hash;
+        bytes// signature
+    ) {
+        ChallengeSignatureRecord storage sr = signatures[challengeId];
+        return (
+            sr.vaeId,
+            sr.challengeRecordId,
+            sr.blockNumber,
+            sr.expirationBlock,
+            sr.revoked,
+            sr.successful,
+            sr.hash,
+            copyArray(sr.signature)
+        );
+    }
+
+    function copyArray(bytes a) private pure returns(bytes) {
         bytes memory second = new bytes(a.length);
 
         for (uint i = 0; i < a.length; i++) {
