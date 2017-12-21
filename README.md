@@ -13,12 +13,12 @@ This repository contains Solidity smart contracts for Authcoin protocol. Current
 * [Revoking EIR](#eir_revoke)
 * [Customized EIR format](#eir_custom)
 * [Posting a challenge record (CR) to the blockchain](#cr_post) 
-* [Querying CR by id](#cr_post)
+* [Querying CR by id](#vae_get)
 * [Customized challenge record format](#cr_custom)
 * [Posting a challenge response record (RR) to the blockchain](#rr_post)
-* [Querying challenge response record](#rr_post)
+* [Querying challenge response record](#vae_get)
 * [Posting a signature record (SR) to the blockchain](#sr_post)
-* [Querying signature records](#sr_post)
+* [Querying signature records](#vae_get)
 * [Revoking signature records](#sr_revoke)
 
 ## Posting and Querying Entity Identity Records <a name="eir_post"></a> ##
@@ -27,14 +27,13 @@ This repository contains Solidity smart contracts for Authcoin protocol. Current
 entity to a certain identity and the corresponding public key. EIR is created during the key generation 
 process and posted to the blockchain. EIR can be updated during the revocation process.
 
-EIR can be registered by calling the [AuthCoin.registerEir](contracts/AuthCoin.sol#L54) function. It has the 
+EIR can be registered by calling the [AuthCoin.registerEir](contracts/AuthCoin.sol#L56) function. It has the
 following input parameters:
 
 | Name           | Type           | Description  |
 |:-------------- | :--------------| :----------- |
-| type           |bytes32         | Type of the EIR. Used to select EIR factory that will be used for EIR creation.|
 | content        |bytes           | Content of the EIR. It may contain a public key or a X509 certificate|
-| revoked        |bool            | Flag indicating whether EIR has been revoked |
+| contentType    |bytes32         | Type of the EIR. Used to select EIR factory that will be used for EIR creation.|
 | identifiers    |bytes32[]       | List of identifiers|
 | hash           |bytes32         | SHA3 hash of the input data.|
 | signature      |bytes           | Signature covering the input data|
@@ -42,68 +41,229 @@ following input parameters:
 The following _qtum-cli_ command can be used to register new EIR:
 
 ```
-TODO
+qtum-cli sendtocontract <authcoin_conract_address> <encoded_function_call>
 ```
 
-[AuthCoin.getEir](contracts/AuthCoin.sol#L207) function can be used to query EIR by the id.
+The following _ethabi_ command can be used to generate encoded function call
 
 ```
-TODO
+ethabi encode function <authcoin_contract_abi> registerEir -p <content> <contentType> <identifiers> <hash> <signarure>
+```
+
+[AuthCoin.getEir](contracts/AuthCoin.sol#L254) function can be used to query EIR by the id.
+
+The following _qtum-cli_ command can be used to query EIR:
+
+```
+qtum-cli callcontract <authcoin_conract_address> <encoded_function_call>
+```
+
+The following _ethabi_ command can be used to generate encoded function call
+
+```
+ethabi encode function <authcoin_contract_abi> getEir -p <eirId> <revokingSignature>
 ```
 
 ## Revoking EIR <a name="eir_revoke"></a> ##
 
-TODO
+EIRs can be revoked by calling the [AuthCoin.revokeEir](contracts/AuthCoin.sol#L96) function and it has following parameters:
 
-## Posting and Querying Challenge Record <a name="cr_post"></a> ##
+| Name              | Type           | Description  |
+|:----------------- | :--------------| :----------- |
+| eirId             |bytes32         | EIR identifier (SHA3 hash of EIR content) |
+| revokingSignature |bytes           | Signature covering SHA3 hash of EIR data |
+
+The following _qtum-cli_ command can be used to revoke EIR:
+
+```
+qtum-cli sendtocontract <authcoin_conract_address> <encoded_function_call>
+```
+
+The following _ethabi_ command can be used to generate encoded function call
+
+```
+ethabi encode function <authcoin_contract_abi> revokeEir -p <eirId> <revokingSignature>
+```
+
+## Posting Challenge Record <a name="cr_post"></a> ##
 
 Because Authcoin uses bidirectional validation and authentication process, both verifier and target create challenges 
-for each other. The challenge record contract format and further information are stored in a 
-[ChallengeRecord (CR)](contracts/ChallengeRecord.sol). 
+for each other. The challenge record is stored as a struct in
+[ValidationAuthenticationEntry (VAE)](contracts/ValidationAuthenticationEntry.sol#L18).
 
-CRs can be registered by calling the [AuthCoin.registerChallengeRecord](contracts/AuthCoin.sol#86) function and it has 
+CRs can be registered by calling the [AuthCoin.registerChallengeRecord](contracts/AuthCoin.sol#105) function and it has
 the following parameters:
 
 | Name           | Type           | Description  |
 |:-------------- | :--------------| :----------- |
-| id             |int             | CR identifier |
-| vae_id         |int             | Validation & authentication entry id. Identifier used to group together CRs, RRs and SRs|
-| timestamp      |uint            | CR creation date|
+| id             |bytes32         | CR identifier |
+| vaeId          |bytes32         | Validation & authentication entry id. Identifier used to group together CRs, RRs and SRs|
 | challengeType  |bytes32         | Type of the challenge|
-| challenge      |bytes32         | Description of the challenge|
-| verifierEir    |int             | Verifier EIR id|
-| targetEir      |int             | Target EIR id|
+| challenge      |bytes           | Description of the challenge|
+| verifierEir    |bytes32         | Verifier EIR id|
+| targetEir      |bytes32         | Target EIR id|
 | hash           |bytes32         | SHA3 hash of the input data|
 | signature      |bytes           | Signature covering the input data|
 
 The following _qtum-cli_ command can be used to register new challenge record:
 
 ```
-TODO
+qtum-cli sendtocontract <authcoin_conract_address> <encoded_function_call>
 ```
+
+The following _ethabi_ command can be used to generate encoded function call
+
+```
+ethabi encode function <authcoin_contract_abi> registerChallengeRecord -p <id> <vaeId> <challengeType> <challenge> <verifierEir> <targetEir> <hash> <signature>
+```
+
+
 ## Posting Challenge Response Record <a name="rr_post"></a> ##
 
 A challenge response record (RR) is created as part of the validation and authentication process. The verifier and the 
 target create responses to the corresponding challenge requests. A RR contains the response itself and related information. 
+The challenge response record is stored as a struct in [ValidationAuthenticationEntry (VAE)](contracts/ValidationAuthenticationEntry.sol#L30).
 
-RR can be registered by calling the [AuthCoin.registerChallengeResponse](contracts/AuthCoin.sol#L142) function. It has the following 
+RR can be registered by calling the [AuthCoin.registerChallengeResponse](contracts/AuthCoin.sol#L166) function. It has the following
 input parameters:
- 
+
 | Name           | Type           | Description  |
 |:-------------- | :--------------| :----------- |
-| vaeId          |int             | Validation & authentication entry id.|
-| challengeId    |int             | Challenge record id |
-| timestamp      |uint            | RR creation date |
-| response       |bytes32         | Response of the challenge |
+| vaeId          |bytes32         | Validation & authentication entry id.|
+| challengeId    |bytes32         | Challenge record id |
+| response       |bytes           | Response of the challenge |
 | hash           |bytes32         | SHA3 hash of the input data|
 | signature      |bytes           | Signature covering the input data|
 
+
+The following _qtum-cli_ command can be used to register new challenge response record:
+
 ```
-TODO fix the table and add commands
+qtum-cli sendtocontract <authcoin_conract_address> <encoded_function_call>
 ```
+
+The following _ethabi_ command can be used to generate encoded function call
+
+```
+ethabi encode function <authcoin_contract_abi> registerChallengeResponse -p <vaeId> <challengeId> <response> <hash> <signature>
+```
+
+
 ## Posting Challenge Signature Record <a name="sr_post"></a> ##
 
-TODO:
+A challenge signature record (SR) is created as part of the validation and authentication process. The verifier and the
+target create signatures to the corresponding challenge response requests. A SR contains the signature itself and related information.
+The challenge response record is stored as a struct in [ValidationAuthenticationEntry (VAE)](contracts/ValidationAuthenticationEntry.sol#L40).
+
+SR can be registered by calling the [AuthCoin.registerChallengeSignature](contracts/AuthCoin.sol#L192) function. It has the following
+input parameters:
+
+| Name            | Type           | Description  |
+|:--------------  | :--------------| :----------- |
+| vaeId           |bytes32         | Validation & authentication entry id.|
+| challengeId     |bytes32         | Challenge record id |
+| expirationBlock |uint            | Block number when the signature expires |
+| successful      |bool            | True if corresponding chalenge response is considered valid|
+| hash            |bytes32         | SHA3 hash of the input data|
+| signature       |bytes           | Signature covering the input data|
+
+The following _qtum-cli_ command can be used to register new challenge signature record:
+
+```
+qtum-cli sendtocontract <authcoin_conract_address> <encoded_function_call>
+```
+
+The following _ethabi_ command can be used to generate encoded function call
+
+```
+ethabi encode function <authcoin_contract_abi> registerChallengeSignature -p <vaeId> <challengeId> <expirationBlock> <successful> <hash> <signature>
+```
+
+## Querying Validation Authentication Entry and CR, RR, SR records <a name="vae_get"></a> ##
+
+Because Authcoin uses bidirectional validation and authentication process, both verifier and target create challenges, challenge responses and challenge signatures
+for each other. All this information is stored in contract validation authentication entry (VAE)
+[ValidationAuthenticationEntry (VAE)](contracts/ValidationAuthenticationEntry.sol)
+
+VAE contract address can be queried by calling the [AuthCoin.getVae](contracts/AuthCoin.sol#L261) function. It has the following
+input parameters:
+
+| Name            | Type           | Description  |
+|:--------------  | :--------------| :----------- |
+| vaeId           |bytes32         | Validation & authentication entry id.|
+
+The following _qtum-cli_ command can be used to register new challenge signature record:
+
+```
+qtum-cli callcontract <authcoin_conract_address> <encoded_function_call>
+```
+
+The following _ethabi_ command can be used to generate encoded function call
+
+```
+ethabi encode function <authcoin_contract_abi> getVae -p <vaeId>
+```
+
+CRs can be queried by calling the [ValidationAuthenticationEntry.getChallenge](contracts/ValidationAuthenticationEntry.sol#239) function and it has
+the following parameters:
+
+| Name           | Type           | Description  |
+|:-------------- | :--------------| :----------- |
+| challengeId    |bytes32         | CR identifier |
+
+
+The following _qtum-cli_ command can be used to register new challenge record:
+
+```
+qtum-cli callcontract <vae_conract_address> <encoded_function_call>
+```
+
+The following _ethabi_ command can be used to generate encoded function call
+
+```
+ethabi encode function <authcoin_contract_abi> getChallenge -p <challengeId>
+```
+
+RRs can be queried by calling the [ValidationAuthenticationEntry.getChallengeResponse](contracts/ValidationAuthenticationEntry.sol#261) function and it has
+the following parameters:
+
+| Name           | Type           | Description  |
+|:-------------- | :--------------| :----------- |
+| challengeId    |bytes32         | CR identifier |
+
+The following _qtum-cli_ command can be used to register new challenge record:
+
+```
+qtum-cli callcontract <vae_conract_address> <encoded_function_call>
+```
+
+The following _ethabi_ command can be used to generate encoded function call
+
+```
+ethabi encode function <authcoin_contract_abi> getChallengeResponse -p <challengeId>
+```
+
+
+SRs can be queried by calling the [ValidationAuthenticationEntry.getChallengeSignature](contracts/ValidationAuthenticationEntry.sol#273) function and it has
+the following parameters:
+
+| Name           | Type           | Description  |
+|:-------------- | :--------------| :----------- |
+| challengeId    |bytes32         | CR identifier |
+
+
+The following _qtum-cli_ command can be used to register new challenge record:
+
+```
+qtum-cli callcontract <vae_conract_address> <encoded_function_call>
+```
+
+The following _ethabi_ command can be used to generate encoded function call
+
+```
+ethabi encode function <authcoin_contract_abi> getChallengeSignature -p <challengeId>
+```
+
 
 # Development #
 
@@ -148,3 +308,21 @@ npm run coverage
 ```
 npm run lint
 ```
+
+## Application Binary Interface ##
+
+The ABI, Application Binary Interface, is basically how you call functions in a contract and get data back.
+
+```
+An ABI determines such details as how functions are called and in which binary format information should be passed from one program component to the next...
+```
+
+An Ethereum smart contract is bytecode, EVM, on the Ethereum blockchain. Among the EVM, there could be several functions in a contract. An ABI is necessary so that you can specify which function in the contract to invoke, as well as get a guarantee that the function will return data in the format you are expecting.
+
+**ethabi** library encodes function calls and decodes their output. For more information visit the project page at https://github.com/paritytech/ethabi
+
+## Using Smart Contracts with Qtum ##
+
+The smart contract interface in Qtum still requires some technical knowledge. The GUI is not completed yet, so all smart contract interation must happen either using qtum-cli at the command line, or in the debug window of qtum-qt.
+
+For more information how to call contracts on Qtum visit https://github.com/qtumproject/qtum/blob/master/doc/sparknet-guide.md
