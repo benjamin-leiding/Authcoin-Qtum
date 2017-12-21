@@ -42,8 +42,6 @@ contract AuthCoin is Ownable {
 
     event LogNewEir(bytes32 id, EntityIdentityRecord eir, bytes32 contentType);
 
-    event LogRevokedEir(bytes32 id);
-
     event LogNewVae(address vaeAddress, bytes32 id);
 
     event LogNewSignatureVerifier(SignatureVerifier a, bytes32 eirType);
@@ -64,17 +62,14 @@ contract AuthCoin is Ownable {
     {
 
         // ensure content type exists
-        require(signatureVerifiers[_contentType] != address(0));
+        SignatureVerifier signatureVerifier = signatureVerifiers[_contentType];
+        require(signatureVerifier != address(0));
 
         // ensure EIR hash is correct
-        // TODO implement
+        require(keccak256(keccak256(_content), _contentType, _content, _identifiers, false) == _hash);
 
         // ensure signature is correct
-        // TODO implement
-
-        // calculate id and ensure it doesn't exist
-        var id = keccak256(_content);
-        require(eirIdToEir[id] == address(0));
+        require(signatureVerifier.verify(BytesUtils.bytes32ToString(_hash), _signature, _content));
 
         // create new contract and store it
         EntityIdentityRecord eir = new EntityIdentityRecord(
@@ -83,8 +78,13 @@ contract AuthCoin is Ownable {
             _contentType,
             _hash,
             _signature,
+            signatureVerifier,
             msg.sender
         );
+
+        // ensure it doesn't exist
+        bytes32 id = eir.getId();
+        require(eirIdToEir[id] == address(0));
 
         eirIdToEir[id] = eir;
         eirIdList.push(id);
@@ -93,19 +93,10 @@ contract AuthCoin is Ownable {
         return true;
     }
 
-    function revokeEir(bytes signature, bytes signer) public returns (bool) {
-        EntityIdentityRecord eir = eirIdToEir[keccak256(signer)];
+    function revokeEir(bytes32 eirId, bytes revokingSignature) public {
+        EntityIdentityRecord eir = eirIdToEir[eirId];
         require(address(eir) != address(0));
-        SignatureVerifier signatureVerifier = signatureVerifiers[eir.getContentType()];
-        require(address(signatureVerifier) != address(0));
-
-        if (signatureVerifier.verifyDirectKeySignature(signature, signer)) {
-            eir.revoke();
-            LogRevokedEir(eir.getId());
-            return true;
-        }
-
-        return false;
+        eir.revoke(revokingSignature);
     }
 
     /**
@@ -122,19 +113,23 @@ contract AuthCoin is Ownable {
         bytes _signature) public returns (bool)
     {
 
-        // ensure CR hash is correct
-        // TODO implement
-
-        // ensure CR signature is correct
-        // TODO implement
-
         // verifier exists
         EntityIdentityRecord verifier = getEir(_verifierEir);
         require(address(verifier) != address(0));
+        require(verifier.isRevoked() == false);
+        require(this == verifier.getCreator());
 
         // target exists
         EntityIdentityRecord target = getEir(_targetEir);
         require(address(target) != address(0));
+        require(target.isRevoked() == false);
+        require(this == target.getCreator());
+
+        // ensure CR hash is correct
+        require(keccak256(_id, _vaeId, _challengeType, _challenge, _verifierEir, _targetEir) == _hash);
+
+        // ensure CR signature is correct
+        require(verifier.verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
 
         //TODO check if EIR is revoked or not.
 
@@ -143,10 +138,12 @@ contract AuthCoin is Ownable {
         var isInitialized = (address(vae)!=address(0));
 
         if (!isInitialized) {
-            vae = new ValidationAuthenticationEntry(_vaeId, owner);
+            vae = new ValidationAuthenticationEntry(_vaeId, msg.sender);
             vaeIdToVae[_vaeId] = vae;
             vaeIdList.push(_vaeId);
             LogNewVae(vae, _vaeId);
+        } else {
+            require(this == vae.getCreator());
         }
 
         vae.addChallengeRecord(_id,
@@ -175,6 +172,7 @@ contract AuthCoin is Ownable {
     {
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
         require(address(vae) != address(0));
+        require(this == vae.getCreator());
 
         require(vae.addChallengeResponseRecord(
             _vaeId,
@@ -202,7 +200,7 @@ contract AuthCoin is Ownable {
         // check vae id. vae must exist and should be in correct status.
         ValidationAuthenticationEntry vae = vaeIdToVae[_vaeId];
         require(address(vae) != address(0));
-
+        // TODO: check correct status
 
         require(vae.addChallengeSignatureRecord(
             _vaeId,
@@ -231,7 +229,6 @@ contract AuthCoin is Ownable {
             verifierIdList.push(eirType);
         }
         signatureVerifiers[eirType] = signatureVerifier;
-
         LogNewSignatureVerifier(signatureVerifier, eirType);
         return true;
     }

@@ -160,6 +160,13 @@ contract ValidationAuthenticationEntry is Identifiable {
         // challenge response doesn't exist
         require(responses[_challengeRecordId].creator == address(0));
 
+        // ensure CRR hash is correct
+        require(keccak256(_vaeId, _challengeRecordId, _response) == _hash);
+
+        // ensure CRR signature is correct
+        ChallengeRecord cr = challenges[_challengeRecordId];
+        require(EntityIdentityRecord(cr.targetEir).verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
+
         ChallengeResponseRecord memory rr = ChallengeResponseRecord(
             _vaeId,
             _challengeRecordId,
@@ -169,9 +176,6 @@ contract ValidationAuthenticationEntry is Identifiable {
             _signature,
             _creator
         );
-
-
-        // TODO rr is signed by correct EIR
 
         responses[_challengeRecordId] = rr;
         responseIdArray.push(_challengeRecordId);
@@ -194,13 +198,17 @@ contract ValidationAuthenticationEntry is Identifiable {
         require(signatureIdArray.length < 2);
 
         // challenge exists
-        require(challenges[_challengeRecordId].creator != address(0));
+        ChallengeRecord cr = challenges[_challengeRecordId];
+        require(cr.creator != address(0));
         // challenge response exist
         require(responses[_challengeRecordId].creator != address(0));
         // challenge response doesn't exist
         require(signatures[_challengeRecordId].creator == address(0));
+        // ensure SR hash is correct
+        require(keccak256(_vaeId, _challengeRecordId, _expirationBlock, _successful) == _hash);
+        // ensure SR signature is correct
 
-        // TODO sr is signed by correct EIR
+        require(EntityIdentityRecord(cr.verifierEir).verifySignature(BytesUtils.bytes32ToString(_hash), _signature));
 
         ChallengeSignatureRecord memory sr = ChallengeSignatureRecord(
             _vaeId,
@@ -220,8 +228,7 @@ contract ValidationAuthenticationEntry is Identifiable {
         return true;
     }
 
-    // TODO rename to getChallengeCount
-    function getChallengesCount() public view returns(uint) {
+    function getChallengeCount() public view returns(uint) {
         return challengeIdArray.length;
     }
 
@@ -340,12 +347,6 @@ contract ValidationAuthenticationEntry is Identifiable {
             second[i] = a[i];
         }
         return second;
-    }
-
-    modifier onlyCreator() {
-        //TODO should only be called by authCoin contract
-        //require(msg.sender == creator);
-        _;
     }
 
 }

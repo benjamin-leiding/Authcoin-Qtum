@@ -2,6 +2,8 @@ pragma solidity ^0.4.17;
 
 
 import "./Identifiable.sol";
+import "./signatures/SignatureVerifier.sol";
+import "./utils/BytesUtils.sol";
 
 
 /**
@@ -14,22 +16,23 @@ contract EntityIdentityRecord is Identifiable {
 
     bytes32 private id;
 
-    uint private blockNumber;
+    bytes32 private contentType;
 
     bytes private content;
 
-    bytes32 private contentType;
+    bytes32[] private identifiers;
 
     bool private revoked;
 
-    bytes32[] private identifiers;
+    uint private blockNumber;
 
     bytes32 private hash;
 
     bytes private signature;
 
-    // creator of the contract.
-    address private creator;
+    SignatureVerifier private signatureVerifier;
+
+    event LogRevokedEir(bytes32 indexed id);
 
     function EntityIdentityRecord(
         bytes32[] _identifiers,
@@ -37,6 +40,7 @@ contract EntityIdentityRecord is Identifiable {
         bytes32 _contentType,
         bytes32 _hash,
         bytes _signature,
+        SignatureVerifier _signatureVerifier,
         address _owner) {
         id = keccak256(_content);
         blockNumber = block.number;
@@ -46,6 +50,7 @@ contract EntityIdentityRecord is Identifiable {
         identifiers = _identifiers;
         hash = _hash;
         signature = _signature;
+        signatureVerifier = _signatureVerifier;
         owner = _owner;
     }
 
@@ -81,6 +86,14 @@ contract EntityIdentityRecord is Identifiable {
         return identifiers;
     }
 
+    function getHash() public view returns (bytes32) {
+        return hash;
+    }
+
+    function getSignature() public view returns (bytes) {
+        return signature;
+    }
+
     function getData() public view returns(
         bytes32,
         uint,
@@ -102,11 +115,18 @@ contract EntityIdentityRecord is Identifiable {
         );
     }
 
-    // TODO getHash
-    // TODO getSignature
+    function revoke(bytes revokingSignature) onlyCreator public returns(bool) {
+        if(signatureVerifier.verify(BytesUtils.bytes32ToString(keccak256(id, contentType, content, identifiers, true)), revokingSignature, content)) {
+            revoked = true;
+            LogRevokedEir(id);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    function revoke() public {// TODO unsafe operation
-        revoked = true;
+    function verifySignature(string message, bytes signature) public returns(bool) {
+        return signatureVerifier.verify(message, signature, content);
     }
 
 }

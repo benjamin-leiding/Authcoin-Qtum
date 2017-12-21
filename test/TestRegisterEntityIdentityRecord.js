@@ -3,7 +3,7 @@ var AuthCoin = artifacts.require("AuthCoin");
 var DummyVerifier = artifacts.require("signatures/DummyVerifier");
 var EntityIdentityRecord = artifacts.require("EntityIdentityRecord");
 
-contract('AuthCoin & EIR', function (accounts) {
+contract('AuthCoin & EntityIdentityRecord', function (accounts) {
 
     let authCoin
 
@@ -12,7 +12,7 @@ contract('AuthCoin & EIR', function (accounts) {
     let id = web3.sha3(content, { encoding: 'hex' })
 
     let contentType = util.bufferToHex(util.setLengthRight("dummy", 32))
-    let hash = web3.fromAscii("hash", 32)
+    let hash = web3.toHex("0xa1e945cea940a4b22e4d188cb5a5ec5d4dbdb02e07e29976a1230a80c1eccd43")
     let signature = web3.fromAscii("signature", 128)
 
     beforeEach('setup contract for each test', async function () {
